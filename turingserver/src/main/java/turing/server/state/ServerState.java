@@ -25,8 +25,12 @@ public class ServerState {
         return getLoggedUser(username).isPresent();
     }
 
-    public void logUserIn(User user) throws IllegalStateException {
+    public void logUserIn(User user) {
         loggedUsers.put(user.name, user);
+    }
+
+    public void logUserOut(User user) {
+        loggedUsers.remove(user.name);
     }
 
 

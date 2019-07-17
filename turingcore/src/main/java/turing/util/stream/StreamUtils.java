@@ -8,12 +8,14 @@ import turing.model.MapsJson;
 import turing.model.user.User;
 
 import java.io.*;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public abstract class StreamUtils {
 
@@ -39,10 +41,17 @@ public abstract class StreamUtils {
                 e.printStackTrace();
             }
         }
+        //TODO: close channel
         return entities;
     }
 
-    public static <T> void serializeEntities(List<T> entities, InputStream in) throws ExecutionControl.NotImplementedException {
-        throw new ExecutionControl.NotImplementedException("Not implemented yet");
+    public static <T extends MapsJson> void serializeEntities(List<T> entities, String root, FileOutputStream file) throws IOException {
+        var channel = file.getChannel();
+
+        List<JSONObject> jsonObjects = entities.stream().map(MapsJson::toJson).collect(Collectors.toList());
+        JSONObject serialized = new JSONObject().put(root, jsonObjects);
+
+        channel.write(ByteBuffer.wrap(serialized.toString().getBytes()));
+        channel.close();
     }
 }

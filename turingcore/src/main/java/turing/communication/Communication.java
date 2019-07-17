@@ -11,7 +11,7 @@ public interface Communication<T extends Payload> extends Closeable {
      * No conjecture is being made on the synchrony or asynchrony of the operation.
      * @return a message if one is available.
      */
-    Optional<Message<T>> consumeMessage() throws IOException;
+    Optional<? extends Message<T>> consumeMessage() throws IOException;
 
     /**
      * Send a message to the configured recipients.

@@ -1,6 +1,7 @@
-package turing.communication.tcp;
+package turing.server.communication.tcp;
 
 import turing.communication.Communication;
+import turing.communication.tcp.TcpCommunication;
 import turing.communication.CommunicationManager;
 import turing.communication.TuringPayload;
 
@@ -16,7 +17,7 @@ public class TcpCommunicationManager extends CommunicationManager {
         serverSocket = new ServerSocket(port);
     }
 
-    public Communication<TuringPayload> acceptCommunication() {
+    public TcpCommunication acceptCommunication() {
         try {
             return new TcpCommunication(serverSocket.accept());
         } catch (IOException e) {

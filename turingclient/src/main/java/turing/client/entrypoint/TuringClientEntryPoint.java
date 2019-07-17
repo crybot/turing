@@ -2,7 +2,7 @@ package turing.client.entrypoint;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.ParseException;
-import turing.client.TuringClientCommandLineInterface;
+import turing.client.io.TuringClientCommandLineInterface;
 import turing.client.io.TuringParser;
 
 import java.io.IOException;
@@ -17,8 +17,11 @@ public class TuringClientEntryPoint {
             if (line.hasOption("login")) {
                 CLI.login(line.getOptionValues("login")[0], line.getOptionValues("login")[1]);
             }
-            if (line.hasOption("logout")) {
+            else if (line.hasOption("logout")) {
                 CLI.logout();
+            }
+            else {
+                CLI.printHelp();
             }
         }
         catch (ParseException e) {

@@ -26,7 +26,7 @@ public class TcpCommunication implements Communication<TuringPayload> {
      * @return The deserialized payload wrapped into an Optional (of a Message<Payload>)
      */
     @Override
-    public Optional<Message<TuringPayload>> consumeMessage() throws IOException {
+    public Optional<TcpMessage> consumeMessage() throws IOException {
         System.out.println("Trying to consume a message...");
         var json = intputMessageStream.readJson();
 
@@ -34,7 +34,8 @@ public class TcpCommunication implements Communication<TuringPayload> {
         if (json.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(new Message<>(new TuringPayload(json)));
+        return Optional.of(new TcpMessage(TuringPayload.of(json)));
+        // return Optional.of(new Message<>(new TuringPayload(json)));
     }
 
     /**

@@ -1,12 +1,11 @@
 package turing.server;
 
-import jdk.jshell.spi.ExecutionControl;
 import org.json.JSONObject;
 import turing.communication.Communication;
 import turing.communication.Message;
-import turing.communication.Payload;
 import turing.communication.TuringPayload;
-import turing.communication.tcp.TcpCommunicationManager;
+import turing.communication.tcp.TcpMessage;
+import turing.server.communication.tcp.TcpCommunicationManager;
 import turing.server.state.ServerState;
 
 import java.io.IOException;
@@ -35,7 +34,7 @@ public class TuringServer implements ServerInterface {
         tcpManager.setup(port);
         while (true) {
             var communication = tcpManager.acceptCommunication();
-            Optional<Message<TuringPayload>> message = communication.consumeMessage();
+            Optional<TcpMessage> message = communication.consumeMessage();
             if (message.isPresent()) {
                 try {
                     decodeAndExecute(message.get(), communication);
@@ -54,11 +53,16 @@ public class TuringServer implements ServerInterface {
      */
     private void decodeAndExecute(Message<TuringPayload> message,
                                   Communication<TuringPayload> communication) throws IOException {
+        System.out.println("Decoding message: " + message.getContent().formatted());
         JSONObject json = message.getContent().getJson();
         ServerLogic serverLogic = new ServerLogic(serverState, communication);
         if (json.has("login")) {
-            var login = json.getJSONObject("login");
-            serverLogic.login(login.getString("user"), login.getString("password"));
+            var user = json.getJSONObject("login");
+            serverLogic.login(user.getString("name"), user.getString("password"));
+        }
+        else if (json.has("logout")) {
+            var user = json.getJSONObject("logout");
+            serverLogic.logout(user.getString("name"), user.getString("password"));
         }
     }
 

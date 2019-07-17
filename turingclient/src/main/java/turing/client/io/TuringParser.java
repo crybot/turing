@@ -18,15 +18,14 @@ public class TuringParser extends DefaultParser {
     private Options setupOptions() {
         Options options = new Options();
         options.addOption("help", "mostra questo messaggio di help");
-        // options.addOption("register", true, "registra l'utente");
-        // options.addOption("login", true, "effettua il login");
-        // options.addOption("logout", "effettua il logout");
 
+        // options.addOption("register", true, "registra l'utente");
         options.addOption(Option.builder("login")
                 .numberOfArgs(2)
                 .argName("username> <password")
                 .desc("effettua il login")
                 .build());
+        options.addOption("logout", false, "effettua il logout");
 
         return options;
     }

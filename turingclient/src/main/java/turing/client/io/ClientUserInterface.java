@@ -1,4 +1,4 @@
-package turing.client;
+package turing.client.io;
 
 public interface ClientUserInterface {
     void register(String username, String password);

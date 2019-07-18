@@ -7,6 +7,7 @@ import turing.communication.json.JsonStreamReader;
 import turing.communication.json.JsonStreamWriter;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Optional;
 
@@ -19,6 +20,10 @@ public class TcpCommunication implements Communication<TuringPayload> {
         this.socket = socket;
         intputMessageStream = new JsonStreamReader(socket.getInputStream());
         outputMessageStream = new JsonStreamWriter(socket.getOutputStream());
+    }
+
+    public TcpCommunication(InetAddress address, int port) throws IOException {
+        this(new Socket(address, port));
     }
 
     /**

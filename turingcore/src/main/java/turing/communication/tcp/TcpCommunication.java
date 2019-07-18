@@ -52,6 +52,19 @@ public class TcpCommunication implements Communication<TuringPayload> {
     }
 
     /**
+     * Synchronously send a message to the output stream of the connection socket
+     * but without throwing an exception if a problem is encountered.
+     * @param message   The message to be sent
+     */
+    @Override
+    public void trySendMessage(Message<TuringPayload> message) {
+        try {
+            sendMessage(message);
+        }
+        catch (IOException e) { }
+    }
+
+    /**
      * Close the message stream and the connection socket
      * @throws IOException
      */

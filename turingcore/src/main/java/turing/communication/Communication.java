@@ -18,4 +18,6 @@ public interface Communication<T extends Payload> extends Closeable {
      * No conjecture is being made on the synchrony or asynchrony of the operation.
      */
     void sendMessage(Message<T> message) throws IOException;
+
+    void trySendMessage(Message<T> message);
 }

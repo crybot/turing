@@ -1,5 +1,6 @@
 package turing.server;
 
+import org.json.JSONObject;
 import turing.communication.Communication;
 import turing.communication.Message;
 import turing.communication.Payload;
@@ -13,6 +14,9 @@ import turing.server.state.ServerState;
 import java.io.IOException;
 import java.util.Optional;
 
+/**
+ * Handles the decode-execute portion of the fetch-decode-execute cycle of networking requests processing
+ */
 public class ServerLogic {
     private Communication<TuringPayload> communication;
     private UserDataManager userDataManager;
@@ -22,6 +26,32 @@ public class ServerLogic {
         this.serverState = serverState;
         this.communication = communication;
         userDataManager = new UserDataManager();
+    }
+
+    /**
+     * Decode a given message into a meaningful operation and execute it
+     * @param message   the request message
+     * @param communication the open communication on which to send a possible response
+     */
+    public void decodeAndExecute(Message<TuringPayload> message,
+                                 Communication<TuringPayload> communication) {
+
+        System.out.println("Decoding message: " + message.getContent().formatted());
+        JSONObject json = message.getContent().getJson();
+
+        try {
+            if (json.has("login")) {
+                var user = json.getJSONObject("login");
+                login(user.getString("name"), user.getString("password"));
+            } else if (json.has("logout")) {
+                var user = json.getJSONObject("logout");
+                logout(user.getString("name"), user.getString("password"));
+            }
+        }
+        catch (IOException e) {
+            System.err.println("Could not process request: " + e.getLocalizedMessage());
+            communication.trySendMessage(TcpMessage.makeResponse("Internal server error", false));
+        }
     }
 
     /**
@@ -37,12 +67,12 @@ public class ServerLogic {
      * @param password
      * @throws IOException
      */
-    public void login(String username, String password) throws IOException {
+    private void login(String username, String password) throws IOException {
         System.out.println("User " + username  + " requested to login" );
 
         // Default response
-        boolean ok = false;
         String response = "Could not log in";
+        boolean ok = false;
 
         // Check whether the user is already logged in
         if (serverState.isUserLoggedIn(username)) {
@@ -64,7 +94,7 @@ public class ServerLogic {
         // communication.sendMessage(new Message<>(TuringPayload.makeResponse(response)));
     }
 
-    public void logout(String username, String password) throws IOException {
+    private void logout(String username, String password) throws IOException {
         System.out.println("User " + username  + " requested to logout" );
 
         // Default response

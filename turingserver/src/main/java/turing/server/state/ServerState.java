@@ -10,6 +10,7 @@ import java.util.UUID;
 /**
  * Server-side in-memory state container.
  */
+// TODO: implement read-write locking strategy
 public class ServerState {
     private Map<String, User> loggedUsers;
 

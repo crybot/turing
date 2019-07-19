@@ -1,8 +1,8 @@
 package turing.communication.tcp;
 
 import turing.communication.Communication;
+import turing.communication.JsonPaylod;
 import turing.communication.Message;
-import turing.communication.TuringPayload;
 import turing.communication.json.JsonStreamReader;
 import turing.communication.json.JsonStreamWriter;
 
@@ -11,7 +11,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Optional;
 
-public class TcpCommunication implements Communication<TuringPayload> {
+public class TcpCommunication implements Communication<JsonPaylod> {
     private Socket socket;
     private JsonStreamReader intputMessageStream;
     private JsonStreamWriter outputMessageStream;
@@ -39,8 +39,8 @@ public class TcpCommunication implements Communication<TuringPayload> {
         if (json.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(new TcpMessage(TuringPayload.of(json)));
-        // return Optional.of(new Message<>(new TuringPayload(json)));
+        return Optional.of(new TcpMessage(JsonPaylod.of(json)));
+        // return Optional.of(new Message<>(new JsonPaylod(json)));
     }
 
     /**
@@ -48,7 +48,7 @@ public class TcpCommunication implements Communication<TuringPayload> {
      * @param message   The message to be sent
      */
     @Override
-    public void sendMessage(Message<TuringPayload> message) throws IOException {
+    public void sendMessage(Message<JsonPaylod> message) throws IOException {
         System.out.println("Trying to send a message...");
         outputMessageStream.write(message.getContent().getJson());
         outputMessageStream.newLine();
@@ -62,7 +62,7 @@ public class TcpCommunication implements Communication<TuringPayload> {
      * @param message   The message to be sent
      */
     @Override
-    public void trySendMessage(Message<TuringPayload> message) {
+    public void trySendMessage(Message<JsonPaylod> message) {
         try {
             sendMessage(message);
         }

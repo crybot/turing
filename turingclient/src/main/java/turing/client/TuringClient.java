@@ -24,6 +24,11 @@ public class TuringClient {
             else if (line.hasOption("logout")) {
                 CLI.logout();
             }
+            else if (line.hasOption("create")) {
+                String name = line.getOptionValues("create")[0];
+                int sections = Integer.parseInt(line.getOptionValues("create")[1]);
+                CLI.create(name, sections);
+            }
             else { // interface misuse
                 CLI.printHelp();
             }

@@ -12,6 +12,7 @@ import java.util.UUID;
  */
 // TODO: implement read-write locking strategy
 public class ServerState {
+    //TODO: map users with users
     private Map<String, User> loggedUsers;
 
     public ServerState() {

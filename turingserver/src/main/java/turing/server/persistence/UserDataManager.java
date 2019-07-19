@@ -5,25 +5,22 @@ import turing.util.stream.StreamUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+//TODO: handle synchronization
 public class UserDataManager implements DataManager<User> {
-    private File getUsersFile() {
-        // NIO needs a FileChannel => I have to retrieve a File handle => I can't retrieve a File handle from the classpath
-        // => the file is placed outsite the classpath and therefore I use the relative path from the root of the
-        // project
-        return new File("./model/user/users");
-        // return new File(getClass().getResource("/model/user/users").getPath());
-        // return new File(Thread.currentThread().getContextClassLoader().getResource("model/user/users").getPath());
-        // return new File(ClassLoader.getSystemResource("classpath:model/user/users").getPath());
+
+    private File getUsersFile() throws IOException {
+        return getFile("./model/user/users");
     }
 
     @Override
     public Optional<User> get(UUID id) {
-        return Optional.empty();
+        return getAll().stream().filter(user -> user.id.equals(id)).findFirst();
     }
 
     public Optional<User> getByName(String name) {
@@ -45,16 +42,19 @@ public class UserDataManager implements DataManager<User> {
     }
 
     @Override
+    //TODO: implement
     public Optional<UUID> create(User entity) {
         return Optional.empty();
     }
 
     @Override
+    //TODO: implement
     public boolean update(User entity) {
         return false;
     }
 
     @Override
+    //TODO: implement
     public boolean delete(User entity) {
         return false;
     }

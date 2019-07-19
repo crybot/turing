@@ -1,5 +1,6 @@
 package turing.model;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.lang.reflect.Array;
@@ -7,21 +8,22 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 public abstract class JsonMapper {
 
     /**
      * Get the default value of a (primitive) data type
-     * @param clazz
+     * @param tClass
      * @param <T>
      * @return
      */
-    private static <T> T getDefaultValue(Class<T> clazz) {
+    private static <T> T getDefaultValue(Class<T> tClass) {
         // Create a one-element array and return the first element.
         // The one element gets initialized by default so we get the default value
         // of the type.
-        return (T) Array.get(Array.newInstance(clazz, 1), 0);
+        return (T) Array.get(Array.newInstance(tClass, 1), 0);
     }
     /**
      * Deserialize an object of type T from its Json representation.
@@ -48,8 +50,8 @@ public abstract class JsonMapper {
         // Reassign each field with the values from the json mapping
         for (var field : fields) {
             field.setAccessible(true);
-            // field is annotated with Maps(from="...", to="...")
             Object value = null;
+            // field is annotated with Maps(from="...", to="...")
             if(field.isAnnotationPresent(Maps.class)) {
                 var annotation = field.getAnnotation(Maps.class);
                 assert(annotation.from().equals(field.getName()));
@@ -61,6 +63,10 @@ public abstract class JsonMapper {
             // Special case for UUID
             if (field.getType().equals(UUID.class)) {
                 value = UUID.fromString(value.toString());
+            }
+            // Special case for List
+            else if (field.getType().equals(List.class)) {
+                value = ((JSONArray)value).toList();
             }
 
             field.set(tInstance, value);

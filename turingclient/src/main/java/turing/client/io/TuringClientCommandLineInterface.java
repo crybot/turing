@@ -1,67 +1,75 @@
 package turing.client.io;
 
 import org.json.JSONObject;
-import turing.client.io.ClientUserInterface;
-import turing.client.io.TuringParser;
-import turing.communication.Message;
-import turing.communication.TuringPayload;
 import turing.communication.tcp.TcpCommunication;
 import turing.communication.tcp.TcpMessage;
+import turing.model.document.Document;
 import turing.model.user.User;
 import turing.util.stream.StreamUtils;
 
 import java.io.*;
 import java.net.InetAddress;
-import java.net.Socket;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channel;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Exposes and implements Client services for the Turing application
  */
 public class TuringClientCommandLineInterface implements ClientUserInterface {
-    private static final File cachedCredentials = new File("./cache/credentials");
+    // private static final File cachedCredentials = new File("./cache/credentials");
+    private static final File cachedUserId = new File("./cache/userId");
 
     public TuringClientCommandLineInterface() { }
 
     /**
-     * Store users's credentials in a persistent location for later work.
-     * Stored credentials are transparently retrieved by the logout procedure.
-     * Only one user at a time can store his credentials in the cached file,
-     * although it is encoded in a for implementation reasons.
-     * @param username  username to store
-     * @param password  password to store
+     * Store users's UUID in a persistent location for later work.
+     * The stored ID is transparently used by the logout procedure.
+     * Only one user at a time can store his ID in the cached file.
+     * @param userId    the UUID to be stored
      * @throws IOException  if the credentials file does not exist and cannot be created
      */
-    private void saveCredentials(String username, String password) throws IOException {
-        List<User> users = List.of(new User(username, password));
-        // Create credentials file (and its parent directories) if it does not exist
-        if (!cachedCredentials.exists()) {
-            cachedCredentials.getParentFile().mkdirs();
-            Files.createFile(cachedCredentials.toPath());
+    private void saveUserId(UUID userId) throws IOException {
+        // Create userId file (and its parent directories) if it does not exist
+        if (!cachedUserId.exists()) {
+            cachedUserId.getParentFile().mkdirs();
+            Files.createFile(cachedUserId.toPath());
         }
-        StreamUtils.serializeEntities(users, "credentials", new FileOutputStream(cachedCredentials));
+        ByteBuffer buffer = ByteBuffer.wrap(userId.toString().getBytes());
+        FileChannel channel = new FileOutputStream(cachedUserId).getChannel();
+        channel.write(buffer);
+        channel.close();
     }
 
     /**
-     * Retrieve previously stored user's credentials
-     * @return  user's credentials wrapped in an Optional.
+     * Retrieve the previously stored user's UUID
+     * @return  user's ID wrapped in an Optional.
      */
-    private Optional<User> getSavedCredentials() {
-        List<User> users;
-        try {
-            users = StreamUtils.deserializeEntities(cachedCredentials, "credentials", User.class);
-            if (users != null && users.size() == 1) {
-                return Optional.ofNullable(users.get(0));
-            }
-        }
-        catch (IOException e) {
+    private Optional<UUID> getSavedUserId() {
+        if (!cachedUserId.exists()) {
             return Optional.empty();
         }
-        return Optional.empty();
+        try(FileChannel channel = FileChannel.open(cachedUserId.toPath())) {
+            var buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, cachedUserId.length());
+            // Decode the bytebuffer with the default charset
+            Charset charset = Charset.defaultCharset();
+            CharsetDecoder decoder = charset.newDecoder();
+
+            UUID userId = UUID.fromString(decoder.decode(buffer).toString());
+            return Optional.of(userId);
+        }
+        catch (Exception e) {
+            return Optional.empty();
+        }
+
     }
+
 
     @Override
     public void register(String username, String password) {
@@ -78,19 +86,22 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
     public void login(String username, String password) {
         try {
             var communication = new TcpCommunication(InetAddress.getLocalHost(), 1024);
-            var json = new JSONObject().put("login", new JSONObject()
-                    .put("name", username)
-                    .put("password", password));
+            var json = new JSONObject().put("login", new User(username, password).toJson());
             communication.sendMessage(TcpMessage.makeRequest(json));
 
             Optional<TcpMessage> response = communication.consumeMessage();
             // If any response has been received
             if (response.isPresent()) {
-                // Print server response to screen if a "response" field is present
-                response.get().getResponse().ifPresent(System.out::println);
-                // If login successful: save user credentials for later work
-                if (response.get().getOk()) {
-                    saveCredentials(username, password);
+                // If the response contains any content
+                var content = response.get().getResponse();
+                if (content.isPresent()) {
+                    // If the login is successful the serve returns the UUID of the logged user
+                    String uuid = content.get();
+                    // If login successful: save the returned userId for later work
+                    if (response.get().getOk()) {
+                        saveUserId(UUID.fromString(uuid));
+                        System.out.println("Login effettuato con successo: " + content.get());
+                    }
                 }
             }
         }
@@ -106,15 +117,13 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
      */
     @Override
     public void logout() {
-        Optional<User> credentials = getSavedCredentials();
-        if (!credentials.isPresent()) {
+        Optional<UUID> userId = getSavedUserId();
+        if (!userId.isPresent()) {
             System.out.println("Devi aver prima eseguito l'accesso per poter effettuare il logout.");
         } else {
             try {
                 var communication = new TcpCommunication(InetAddress.getLocalHost(), 1024);
-                var json = new JSONObject().put("logout", new JSONObject()
-                        .put("name", credentials.get().name)
-                        .put("password", credentials.get().password));
+                var json = new JSONObject().put("logout", new JSONObject().put("userId", userId.get()));
                 communication.sendMessage(TcpMessage.makeRequest(json));
 
                 Optional<TcpMessage> response = communication.consumeMessage();
@@ -130,7 +139,26 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
 
     @Override
     public void create(String document, int sections) {
+        Optional<UUID> userId = getSavedUserId();
+        if (!userId.isPresent()) {
+            System.out.println("Devi eseguire il login prima di poter effettuare un'operazione");
+        }
+        else {
+            try {
+                var communication = new TcpCommunication(InetAddress.getLocalHost(), 1024);
+                var doc = new Document(document, sections, userId.get());
+                var json = new JSONObject().put("create", doc.toJson());
+                communication.sendMessage(TcpMessage.makeRequest(json));
 
+                Optional<TcpMessage> response = communication.consumeMessage();
+                // If any response has been received
+                // Print server response to screen if a "response" field is present
+                response.ifPresent(tcpMessage -> tcpMessage.getResponse().ifPresent(System.out::println));
+            }
+            catch (Exception e) {
+                System.err.println("Errore: " + e.getLocalizedMessage());
+            }
+        }
     }
 
     @Override
@@ -154,7 +182,7 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
     }
 
     @Override
-    public void edit(String documnet, int section) {
+    public void edit(String document, int section) {
 
     }
 

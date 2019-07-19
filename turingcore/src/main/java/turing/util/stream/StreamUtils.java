@@ -1,11 +1,9 @@
 package turing.util.stream;
 
-import jdk.jshell.spi.ExecutionControl;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import turing.model.JsonMapper;
 import turing.model.MapsJson;
-import turing.model.user.User;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -25,6 +23,10 @@ public abstract class StreamUtils {
         // Memory mapped file
         var buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, file.length());
 
+        // If the file is empty => return an empty list
+        if (!buffer.hasRemaining()) {
+            return new ArrayList<>();
+        }
         // Decode the bytebuffer with the default charset
         Charset charset = Charset.defaultCharset();
         CharsetDecoder decoder = charset.newDecoder();
@@ -48,7 +50,9 @@ public abstract class StreamUtils {
     public static <T extends MapsJson> void serializeEntities(List<T> entities, String root, FileOutputStream file) throws IOException {
         var channel = file.getChannel();
 
-        List<JSONObject> jsonObjects = entities.stream().map(MapsJson::toJson).collect(Collectors.toList());
+        List<JSONObject> jsonObjects = entities.stream()
+                .map(MapsJson::toJson)
+                .collect(Collectors.toList());
         JSONObject serialized = new JSONObject().put(root, jsonObjects);
 
         channel.write(ByteBuffer.wrap(serialized.toString().getBytes()));

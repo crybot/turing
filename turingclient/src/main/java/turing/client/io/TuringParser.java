@@ -27,6 +27,12 @@ public class TuringParser extends DefaultParser {
                 .build());
         options.addOption("logout", false, "effettua il logout");
 
+        options.addOption(Option.builder("create")
+                .numberOfArgs(2)
+                .argName("doc> <numsezioni")
+                .desc("crea un documento")
+                .build());
+
         return options;
     }
 

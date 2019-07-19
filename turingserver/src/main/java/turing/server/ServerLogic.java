@@ -2,30 +2,33 @@ package turing.server;
 
 import org.json.JSONObject;
 import turing.communication.Communication;
+import turing.communication.JsonPaylod;
 import turing.communication.Message;
-import turing.communication.Payload;
-import turing.communication.TuringPayload;
 import turing.communication.tcp.TcpMessage;
+import turing.model.document.Document;
 import turing.model.user.User;
-import turing.server.persistence.DataManager;
+import turing.server.persistence.DocumentDataManager;
 import turing.server.persistence.UserDataManager;
 import turing.server.state.ServerState;
 
 import java.io.IOException;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Handles the decode-execute portion of the fetch-decode-execute cycle of networking requests processing
  */
 public class ServerLogic {
-    private Communication<TuringPayload> communication;
+    private Communication<JsonPaylod> communication;
     private UserDataManager userDataManager;
+    private DocumentDataManager documentDataManager;
     private ServerState serverState;
 
-    public ServerLogic(ServerState serverState, Communication<TuringPayload> communication) {
+    public ServerLogic(ServerState serverState, Communication<JsonPaylod> communication) {
         this.serverState = serverState;
         this.communication = communication;
         userDataManager = new UserDataManager();
+        documentDataManager = new DocumentDataManager();
     }
 
     /**
@@ -33,23 +36,52 @@ public class ServerLogic {
      * @param message   the request message
      * @param communication the open communication on which to send a possible response
      */
-    public void decodeAndExecute(Message<TuringPayload> message,
-                                 Communication<TuringPayload> communication) {
+    public void decodeAndExecute(Message<JsonPaylod> message,
+                                 Communication<JsonPaylod> communication) {
 
         System.out.println("Decoding message: " + message.getContent().formatted());
         JSONObject json = message.getContent().getJson();
 
         try {
+            // A login request contains the user's credentials
             if (json.has("login")) {
                 var user = json.getJSONObject("login");
                 login(user.getString("name"), user.getString("password"));
-            } else if (json.has("logout")) {
-                var user = json.getJSONObject("logout");
-                logout(user.getString("name"), user.getString("password"));
+            }
+            // A logout request contains a UUID parameter representing the ID of the user to be logged out
+            else if (json.has("logout")) {
+                // example json request: {"logout": {"userId": "xxxxx-yyyyy-wwwww-zzzzz"} }
+                var userId = UUID.fromString(json.getJSONObject("logout").getString("userId"));
+                var user = userDataManager.get(userId);
+                // If a user with the given ID can be found in the database
+                if (user.isPresent()) {
+                    logout(user.get().name, user.get().password);
+                }
+                else {
+                    throw new IOException("Could not find user with ID: " + userId);
+                }
+            }
+            // A create request contains the document's name, an array of sections and the UUID of the file's author
+            else if (json.has("create")) {
+                // example json request: {"create": {"name": "foo",
+                //                                  "sections": ["non", "empty", "section"],
+                //                                  "authorId": "xxxxx-yyyyy-wwwww-zzzzz"}}
+                var doc = json.getJSONObject("create");
+                var name = doc.getString("name");
+                var sections = doc.getJSONArray("sections");
+                var authorId = UUID.fromString(doc.getString("authorId"));
+                var author = userDataManager.get(authorId);
+                if (author.isPresent()) {
+                    createDocumment(name, sections.length(), author.get());
+                }
+                else {
+                    throw new IOException("Could not find user with ID: " + authorId);
+                }
             }
         }
-        catch (IOException e) {
+        catch (Exception e) {
             System.err.println("Could not process request: " + e.getLocalizedMessage());
+            e.printStackTrace();
             communication.trySendMessage(TcpMessage.makeResponse("Internal server error", false));
         }
     }
@@ -63,6 +95,7 @@ public class ServerLogic {
      *                 to authenticate again. This problem would be solved by using an authentication method based
      *                 on security tokens like OAuth2.0 or by caching cookies on the client machine.
      *                 Both methods have been considered overkill for the overall project, which is of didactic nature.
+     * Response: If the login is successful, the server sends a response message containing the UUID of the user
      * @param username
      * @param password
      * @throws IOException
@@ -85,13 +118,12 @@ public class ServerLogic {
             // If such user is present
             if (user.isPresent()) {
                 serverState.logUserIn(user.get()); // Log the user in
-                response = "Login successful";
+                response = user.get().id.toString();
                 ok = true;
             }
         }
         // Send the response to the client
         communication.sendMessage(TcpMessage.makeResponse(response, ok));
-        // communication.sendMessage(new Message<>(TuringPayload.makeResponse(response)));
     }
 
     private void logout(String username, String password) throws IOException {
@@ -117,6 +149,35 @@ public class ServerLogic {
             ok = false;
         }
         communication.sendMessage(TcpMessage.makeResponse(response, ok));
-        // communication.sendMessage(new Message<>(TuringPayload.makeResponse(response)));
+        // communication.sendMessage(new Message<>(JsonPaylod.makeResponse(response)));
+    }
+
+    /**
+     * Create a document
+     * @param name
+     * @param sections
+     * @param author
+     */
+    private void createDocumment(String name, int sections, User author) throws IOException {
+        // Default response
+        String response = "User not logged in";
+        boolean ok = false;
+
+        // Check whether the user is logged in
+        if (serverState.isUserLoggedIn(author.name)) {
+            // Try to create a new document
+            var documentId = documentDataManager.create(new Document(name, sections, author.id));
+            // If the document has been created correctly
+            if (documentId.isPresent()) {
+                response = "Document created successfully with name: " + name;
+                ok = true;
+            }
+            else {
+                response = "Could not create document";
+                ok = false;
+            }
+        }
+        // Send response
+        communication.sendMessage(TcpMessage.makeResponse(response, ok));
     }
 }

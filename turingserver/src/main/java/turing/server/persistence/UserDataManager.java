@@ -12,15 +12,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 //TODO: handle synchronization
-public class UserDataManager implements DataManager<User> {
+public class UserDataManager extends DataManager<UUID, User> {
 
-    private File getUsersFile() throws IOException {
-        return getFile("./model/user/users");
-    }
-
-    @Override
-    public Optional<User> get(UUID id) {
-        return getAll().stream().filter(user -> user.id.equals(id)).findFirst();
+    public UserDataManager(String path) {
+        super(path, "users", User.class);
     }
 
     public Optional<User> getByName(String name) {
@@ -32,19 +27,15 @@ public class UserDataManager implements DataManager<User> {
     }
 
     @Override
-    public List<User> getAll() {
-        try {
-            return StreamUtils.deserializeEntities(getUsersFile(), "users", User.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return new ArrayList<>();
+    //TODO: implement
+    public Optional<UUID> create(User entity) {
+        return Optional.empty();
     }
 
     @Override
     //TODO: implement
-    public Optional<UUID> create(User entity) {
-        return Optional.empty();
+    protected boolean contains(List<User> entities, User entity) {
+        return false;
     }
 
     @Override

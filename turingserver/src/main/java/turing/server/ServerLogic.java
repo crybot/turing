@@ -31,9 +31,9 @@ public class ServerLogic {
     public ServerLogic(ServerState serverState, Communication<JsonPaylod> communication) {
         this.serverState = serverState;
         this.communication = communication;
-        userDataManager = new UserDataManager();
-        documentDataManager = new DocumentDataManager();
-        invitationDataManager = new InvitationDataManager();
+        userDataManager = new UserDataManager("./model/user/users");
+        documentDataManager = new DocumentDataManager("./model/document/documents");
+        invitationDataManager = new InvitationDataManager("./model/invitation/invitations");
     }
 
     /**

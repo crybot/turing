@@ -103,6 +103,9 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
                         saveUserId(UUID.fromString(uuid));
                         System.out.println("Login effettuato con successo: " + content.get());
                     }
+                    else {
+                        System.out.println("Impossibile effettuare il login: " + content.get());
+                    }
                 }
             }
         }

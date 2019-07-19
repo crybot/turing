@@ -1,6 +1,7 @@
 package turing.model.user;
 
 import org.json.JSONObject;
+import turing.model.Identifiable;
 import turing.model.MapsJson;
 
 import java.io.Serializable;
@@ -9,7 +10,7 @@ import java.util.UUID;
 /**
  * Immutable data-model representation of an User
  */
-public class User implements Serializable, MapsJson {
+public class User implements Serializable, MapsJson, Identifiable<UUID> {
 
     public final UUID id;
     public final String name;
@@ -37,5 +38,10 @@ public class User implements Serializable, MapsJson {
     @Override
     public String toString() {
         return "{ name=" + name + " password=" + password + " id=" + id + " }";
+    }
+
+    @Override
+    public UUID getId() {
+        return id;
     }
 }

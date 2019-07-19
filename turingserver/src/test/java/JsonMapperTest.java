@@ -39,7 +39,7 @@ public class JsonMapperTest {
 
         System.out.println();
 
-        var dataManager = new UserDataManager();
+        var dataManager = new UserDataManager("./model/user/users");
 
         // NIO file read
         List<User> users = dataManager.getAll();

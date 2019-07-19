@@ -11,49 +11,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class InvitationDataManager implements DataManager<Invitation> {
-    //TODO: make root (e.g. "invitations") as a private constant
+public class InvitationDataManager extends DataManager<UUID, Invitation> {
 
-    private File getInvitationsFile() throws IOException {
-        return getFile("./model/invitation/invitations");
+    public InvitationDataManager(String path) {
+        super(path, "invitations", Invitation.class);
     }
 
     @Override
-    public Optional<Invitation> get(UUID id) {
-        return getAll().stream().filter(inv -> inv.id.equals(id)).findFirst();
-    }
-
-    @Override
-    public List<Invitation> getAll() {
-        try {
-            return StreamUtils.deserializeEntities(getInvitationsFile(), "invitations", Invitation.class);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return new ArrayList<>();
-    }
-
-    @Override
-    public Optional<UUID> create(Invitation entity) {
-        if (entity == null || entity.id == null) {
-            return Optional.empty();
-        }
-
-        List<Invitation> invitations = getAll();
-        // If there is already an invitation with the same name user-document association
-        if (invitations.stream().anyMatch(inv -> inv.userName.equals(entity.userName)
-                && inv.documentName.equals(entity.documentName))) {
-            return Optional.empty();
-        }
-
-        invitations.add(entity);
-        try {
-            StreamUtils.serializeEntities(invitations, "invitations", new FileOutputStream(getInvitationsFile()));
-            return Optional.of(entity.id);
-        }
-        catch (IOException e) {
-            return Optional.empty();
-        }
+    protected boolean contains(List<Invitation> entities, Invitation invitation) {
+        return entities.stream().anyMatch(inv ->
+                inv.userName.equals(invitation.userName)
+                        && inv.documentName.equals(invitation.documentName));
     }
 
     @Override

@@ -1,6 +1,7 @@
 package turing.model.document;
 
 import org.json.JSONObject;
+import turing.model.Identifiable;
 import turing.model.MapsJson;
 
 import java.io.Serializable;
@@ -9,7 +10,7 @@ import java.util.*;
 /**
  *
  */
-public class Document implements Serializable, MapsJson {
+public class Document implements Serializable, MapsJson, Identifiable<UUID> {
     private UUID id;
     private UUID authorId;
     private String name;

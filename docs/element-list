@@ -1,5 +1,17 @@
+turing.client
+turing.client.entrypoint
+turing.client.io
+turing.communication
+turing.communication.json
+turing.communication.tcp
+turing.model
+turing.model.document
+turing.model.invitation
+turing.model.user
+turing.network
 turing.server
 turing.server.communication.tcp
 turing.server.entrypoint
 turing.server.persistence
 turing.server.state
+turing.util.stream

@@ -36,6 +36,6 @@ buildNumber.properties
 
 # Turing
 cache/
-model/
+/model/
 
 

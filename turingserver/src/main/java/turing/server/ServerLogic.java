@@ -5,9 +5,12 @@ import turing.communication.Communication;
 import turing.communication.JsonPaylod;
 import turing.communication.Message;
 import turing.communication.tcp.TcpMessage;
+import turing.model.JsonMapper;
 import turing.model.document.Document;
+import turing.model.invitation.Invitation;
 import turing.model.user.User;
 import turing.server.persistence.DocumentDataManager;
+import turing.server.persistence.InvitationDataManager;
 import turing.server.persistence.UserDataManager;
 import turing.server.state.ServerState;
 
@@ -22,6 +25,7 @@ public class ServerLogic {
     private Communication<JsonPaylod> communication;
     private UserDataManager userDataManager;
     private DocumentDataManager documentDataManager;
+    private InvitationDataManager invitationDataManager;
     private ServerState serverState;
 
     public ServerLogic(ServerState serverState, Communication<JsonPaylod> communication) {
@@ -29,6 +33,7 @@ public class ServerLogic {
         this.communication = communication;
         userDataManager = new UserDataManager();
         documentDataManager = new DocumentDataManager();
+        invitationDataManager = new InvitationDataManager();
     }
 
     /**
@@ -72,7 +77,21 @@ public class ServerLogic {
                 var authorId = UUID.fromString(doc.getString("authorId"));
                 var author = userDataManager.get(authorId);
                 if (author.isPresent()) {
-                    createDocumment(name, sections.length(), author.get());
+                    createDocument(name, sections.length(), author.get());
+                }
+                else {
+                    throw new IOException("Could not find user with ID: " + authorId);
+                }
+            }
+            // A share request contains the document's name, the username to associate it with and the ID of the
+            // document's author
+            else if (json.has("share")) {
+                // example json request: {"share": {"documentName": "foo", "userName": "bar"}}
+                var invite = JsonMapper.fromJson(json.getJSONObject("share"), Invitation.class);
+                var authorId = UUID.fromString(json.getJSONObject("share").getString("authorId"));
+                var author = userDataManager.get(authorId);
+                if (author.isPresent()) {
+                    shareDocument(invite.documentName, invite.userName, author.get());
                 }
                 else {
                     throw new IOException("Could not find user with ID: " + authorId);
@@ -158,7 +177,7 @@ public class ServerLogic {
      * @param sections
      * @param author
      */
-    private void createDocumment(String name, int sections, User author) throws IOException {
+    private void createDocument(String name, int sections, User author) throws IOException {
         // Default response
         String response = "User not logged in";
         boolean ok = false;
@@ -174,6 +193,26 @@ public class ServerLogic {
             }
             else {
                 response = "Could not create document";
+                ok = false;
+            }
+        }
+        // Send response
+        communication.sendMessage(TcpMessage.makeResponse(response, ok));
+    }
+
+    private void shareDocument(String documentName, String userName, User author) throws IOException {
+        // Default response
+        String response = "User not logged in";
+        boolean ok = false;
+
+        if (serverState.isUserLoggedIn(author.name)) {
+            var invitationId = invitationDataManager.create(new Invitation(documentName, userName));
+            if (invitationId.isPresent()) {
+                response = "Document " + documentName + " successfully shared with " + userName;
+                ok = true;
+            }
+            else {
+                response = "Could not share document";
                 ok = false;
             }
         }

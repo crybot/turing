@@ -19,6 +19,7 @@ public class TuringParser extends DefaultParser {
         Options options = new Options();
         options.addOption("help", "mostra questo messaggio di help");
 
+        /* Users */
         // options.addOption("register", true, "registra l'utente");
         options.addOption(Option.builder("login")
                 .numberOfArgs(2)
@@ -27,10 +28,16 @@ public class TuringParser extends DefaultParser {
                 .build());
         options.addOption("logout", false, "effettua il logout");
 
+        /* Documents */
         options.addOption(Option.builder("create")
                 .numberOfArgs(2)
                 .argName("doc> <numsezioni")
                 .desc("crea un documento")
+                .build());
+        options.addOption(Option.builder("share")
+                .numberOfArgs(2)
+                .argName("doc> <username")
+                .desc("condivide il documento")
                 .build());
 
         return options;

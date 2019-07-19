@@ -4,6 +4,7 @@ import org.json.JSONObject;
 import turing.communication.tcp.TcpCommunication;
 import turing.communication.tcp.TcpMessage;
 import turing.model.document.Document;
+import turing.model.invitation.Invitation;
 import turing.model.user.User;
 import turing.util.stream.StreamUtils;
 
@@ -137,6 +138,13 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
     }
 
 
+    /**
+     * Send a 'create document' request to the server
+     * If any response is received, it will be printed on screen.
+     * The credentials to be sent to the server have been previously cached.
+     * @param document
+     * @param sections
+     */
     @Override
     public void create(String document, int sections) {
         Optional<UUID> userId = getSavedUserId();
@@ -163,6 +171,26 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
 
     @Override
     public void share(String document, String username) {
+        Optional<UUID> userId = getSavedUserId();
+        if (!userId.isPresent()) {
+            System.out.println("Devi eseguire il login prima di poter effettuare un'operazione");
+        }
+        else {
+            try {
+                var communication = new TcpCommunication(InetAddress.getLocalHost(), 1024);
+                var invite = new Invitation(document, username);
+                var json = new JSONObject().put("share", invite.toJson().put("authorId", userId.get().toString()));
+                communication.sendMessage(TcpMessage.makeRequest(json));
+
+                Optional<TcpMessage> response = communication.consumeMessage();
+                // If any response has been received
+                // Print server response to screen if a "response" field is present
+                response.ifPresent(tcpMessage -> tcpMessage.getResponse().ifPresent(System.out::println));
+            }
+            catch (Exception e) {
+                System.err.println("Errore: " + e.getLocalizedMessage());
+            }
+        }
 
     }
 

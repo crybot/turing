@@ -29,6 +29,11 @@ public class TuringClient {
                 int sections = Integer.parseInt(line.getOptionValues("create")[1]);
                 CLI.create(name, sections);
             }
+            else if (line.hasOption("share")) {
+                String documentName = line.getOptionValues("share")[0];
+                String userName = line.getOptionValues("share")[1];
+                CLI.share(documentName, userName);
+            }
             else { // interface misuse
                 CLI.printHelp();
             }

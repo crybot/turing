@@ -39,6 +39,11 @@ public class TuringParser extends DefaultParser {
                 .argName("doc> <username")
                 .desc("condivide il documento")
                 .build());
+        options.addOption(Option.builder("show")
+                .numberOfArgs(2)
+                .argName("doc> <sec")
+                .desc("mostra una sezione del documento")
+                .build());
 
         return options;
     }

@@ -1,1 +1,2 @@
-{"invitations":[{"documentName":"testDoc1","id":"fcb68dfa-9e33-414d-a020-b47b99fcb46a","userName":"foo"}]}
+{"invitations":[{"documentName":"testDoc1","id":"fcb68dfa-9e33-414d-a020-b47b99fcb46a","userName":"foo"},
+{"documentName":"testDoc2","id":"fcb69dfa-9e33-412d-a022-b47b99fcb46a","userName":"foo"}]}

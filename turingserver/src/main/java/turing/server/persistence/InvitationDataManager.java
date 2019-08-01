@@ -1,6 +1,7 @@
 package turing.server.persistence;
 
 import turing.model.invitation.Invitation;
+import turing.model.user.User;
 import turing.util.stream.StreamUtils;
 
 import java.io.File;
@@ -10,11 +11,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 public class InvitationDataManager extends DataManager<UUID, Invitation> {
 
     public InvitationDataManager(String path) {
         super(path, "invitations", Invitation.class);
+    }
+
+    public List<Invitation> getByUser(User user) {
+        return getAll().stream().filter(inv -> inv.userName.equals(user.name)).collect(Collectors.toList());
     }
 
     @Override

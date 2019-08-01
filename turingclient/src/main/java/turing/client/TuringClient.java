@@ -1,5 +1,6 @@
 package turing.client;
 
+import jdk.jshell.spi.ExecutionControl;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.ParseException;
 import turing.client.io.ClientUserInterface;
@@ -15,7 +16,7 @@ public class TuringClient {
         parser = new TuringParser();
     }
 
-    public void start(String[] args) {
+    public void start(String[] args) throws ExecutionControl.NotImplementedException {
         try {
             CommandLine line = parser.parse(args);
             if (line.hasOption("login")) {
@@ -33,6 +34,17 @@ public class TuringClient {
                 String documentName = line.getOptionValues("share")[0];
                 String userName = line.getOptionValues("share")[1];
                 CLI.share(documentName, userName);
+            }
+            // Show section of a document
+            else if (line.hasOption("show") && line.getOptionValues("show").length == 2) {
+                String documentName = line.getOptionValues("show")[0];
+                int section = Integer.parseInt(line.getOptionValues("show")[1]);
+                CLI.show(documentName, section);
+            }
+            // Show entire document
+            else if (line.hasOption("show") && line.getOptionValues("show").length == 1) {
+                String documentName = line.getOptionValue("show");
+                CLI.show(documentName);
             }
             else { // interface misuse
                 CLI.printHelp();

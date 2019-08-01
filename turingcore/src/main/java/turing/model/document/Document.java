@@ -42,7 +42,7 @@ public class Document implements Serializable, MapsJson, Identifiable<UUID> {
 
     public Optional<String> getSection(int section) {
         try {
-            return Optional.ofNullable(sections.get(section));
+            return Optional.ofNullable(sections.get(section - 1));
         }
         catch (IndexOutOfBoundsException e) {
             return Optional.empty();

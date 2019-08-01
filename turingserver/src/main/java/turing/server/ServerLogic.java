@@ -1,5 +1,6 @@
 package turing.server;
 
+import jdk.jshell.spi.ExecutionControl;
 import org.json.JSONObject;
 import turing.communication.Communication;
 import turing.communication.JsonPaylod;
@@ -15,8 +16,10 @@ import turing.server.persistence.UserDataManager;
 import turing.server.state.ServerState;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Handles the decode-execute portion of the fetch-decode-execute cycle of networking requests processing
@@ -96,6 +99,24 @@ public class ServerLogic {
                 else {
                     throw new IOException("Could not find user with ID: " + authorId);
                 }
+            }
+            // show section / show document
+            // A show request contains either a document name and a section number, or just the document name.
+            // In the first case only the section of the document matching the given section number have to be shown,
+            // while in the latter, the entire document is shown.
+            else if (json.has("show")) {
+                var request = json.getJSONObject("show");
+                var user = userDataManager.get(UUID.fromString(request.getString("userId")));
+
+                if (request.has("documentName") && request.has("section") && user.isPresent()) {
+                    showSection(request.getString("documentName"), request.getInt("section"), user.get());
+                }
+                else if (request.has("documentName") && user.isPresent()) {
+                    showDocument(request.getString("documentName"), user.get());
+                }
+            }
+            else {
+                throw new IOException("error");
             }
         }
         catch (Exception e) {
@@ -200,6 +221,7 @@ public class ServerLogic {
         communication.sendMessage(TcpMessage.makeResponse(response, ok));
     }
 
+    //TODO: make sure only the real owner of the file can share a document!
     private void shareDocument(String documentName, String userName, User author) throws IOException {
         // Default response
         String response = "User not logged in";
@@ -218,5 +240,71 @@ public class ServerLogic {
         }
         // Send response
         communication.sendMessage(TcpMessage.makeResponse(response, ok));
+    }
+
+    /**
+     * Send the client the content of the indicated section of the selected document
+     * Note: The user must have permissions to read the document.
+     * @param documentName  the name of the document
+     * @param section       the document's section's number
+     * @param user          the user sending the request
+     */
+    private void showSection(String documentName, int section, User user) throws IOException {
+        // Default response
+        String response = "User not logged in";
+        boolean ok = false;
+
+        if (serverState.isUserLoggedIn(user.name)) {
+            var userDocuments = getUserDocuments(user);
+            // If the user has the rights to read the document
+            if (userDocuments.stream().anyMatch(doc -> doc.getName().equals(documentName))) {
+                var document = documentDataManager.getByName(documentName);
+                // Check whether the document (redundant) and the selected section exists
+                if (document.isPresent() && document.get().getSection(section).isPresent()) {
+                    response = document.get().getSection(section).get();
+                    ok = true;
+                }
+                else {
+                    response = "Could not open section " + section + " of document " + documentName;
+                    ok = false;
+                }
+            }
+            else {
+                response = "User has no rights to access the document";
+                ok = false;
+            }
+        }
+        // Send response
+        communication.sendMessage(TcpMessage.makeResponse(response, ok));
+    }
+
+    private void showDocument(String documentName, User user) throws ExecutionControl.NotImplementedException {
+        throw new ExecutionControl.NotImplementedException("showDocument() not implemented");
+    }
+
+    /**
+     * Retrieve documents accessible by the user either because he is the owner of the document or because
+     * he received an invitation by an other user
+     * @param user
+     * @return A list of all documents accessible by the user
+     */
+    private List<Document> getUserDocuments(User user) {
+        // Get documents directly created by the user
+        var ownedDocuments = documentDataManager.getByAuthor(user);
+        // Get documents for which the user received an invitation:
+        //  - first get all invitations received by the user;
+        //  - get all (optional) documents indicated by the invitations;
+        //  - flatten the list of Optional<Document>-s to a list Document-s
+        //      (basically an application of the binding operator to a monad)
+        var sharedDocuments = invitationDataManager.getByUser(user)
+                .stream()
+                .map(inv -> documentDataManager.getByName(inv.documentName))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
+
+        // concat the two lists and return the result
+        ownedDocuments.addAll(sharedDocuments);
+        return ownedDocuments;
     }
 }

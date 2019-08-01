@@ -1,5 +1,6 @@
 package turing.client.io;
 
+import jdk.jshell.spi.ExecutionControl;
 import org.json.JSONObject;
 import turing.communication.tcp.TcpCommunication;
 import turing.communication.tcp.TcpMessage;
@@ -198,13 +199,34 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
     }
 
     @Override
-    public void show(String document, int section) {
+    public void show(String documentName, int section) {
+        Optional<UUID> userId = getSavedUserId();
+        if (!userId.isPresent()) {
+            System.out.println("Devi eseguire il login prima di poter effettuare un'operazione");
+        }
+        else {
+            try {
+                var communication = new TcpCommunication(InetAddress.getLocalHost(), 1024);
+                var json = new JSONObject().put("show", new JSONObject()
+                        .put("documentName", documentName)
+                        .put("section", section)
+                        .put("userId", userId.get()));
+                communication.sendMessage(TcpMessage.makeRequest(json));
 
+                Optional<TcpMessage> response = communication.consumeMessage();
+                // If any response has been received
+                // Print server response to screen if a "response" field is present
+                response.ifPresent(tcpMessage -> tcpMessage.getResponse().ifPresent(System.out::println));
+            }
+            catch (Exception e) {
+                System.err.println("Errore: " + e.getLocalizedMessage());
+            }
+        }
     }
 
     @Override
-    public void show(String document) {
-
+    public void show(String document) throws ExecutionControl.NotImplementedException {
+        throw new ExecutionControl.NotImplementedException("Not implemented");
     }
 
     @Override

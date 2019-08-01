@@ -79,6 +79,8 @@ public abstract class DataManager<K, T extends Identifiable<K> & MapsJson> {
 
         List<T> entities = getAll();
 
+        //TODO: T could override equals and the contains might be completely specified
+        //      inside the abstract class
         if (contains(entities, entity)) {
             return Optional.empty();
         }

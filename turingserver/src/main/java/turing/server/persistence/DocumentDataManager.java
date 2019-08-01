@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 //TODO: handle synchronization
 public class DocumentDataManager extends DataManager<UUID, Document> {
@@ -23,6 +24,10 @@ public class DocumentDataManager extends DataManager<UUID, Document> {
 
     public Optional<Document> getByName(String name) {
         return getAll().stream().filter(doc -> doc.getName().equals(name)).findFirst();
+    }
+
+    public List<Document> getByAuthor(User author) {
+        return getAll().stream().filter(doc -> doc.getAuthorId().equals(author.id)).collect(Collectors.toList());
     }
 
     public Optional<Document> getByNameAndAuthor(String name, User author) {

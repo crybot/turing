@@ -327,6 +327,11 @@ public class ServerLogic {
         communication.sendMessage(TcpMessage.makeResponse(response, ok));
     }
 
+    /**
+     * Send the client the list of documents accessible by the user
+     * @param user          the user sending the request
+     * @throws IOException
+     */
     private void listDocuments(User user) throws IOException {
         // Default response
         String response = "User not logged in";

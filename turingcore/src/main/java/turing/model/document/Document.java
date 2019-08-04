@@ -22,7 +22,6 @@ public class Document implements Serializable, MapsJson, Identifiable<UUID> {
 
     public Document(String name, int sections, UUID authorId, UUID id) {
         this.name = name;
-        // Might be immutable: to test
         this.sections = new ArrayList<>((Collections.nCopies(sections, "")));
         this.authorId = authorId;
         this.id = id;

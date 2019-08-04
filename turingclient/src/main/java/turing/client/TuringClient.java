@@ -7,6 +7,8 @@ import turing.client.io.ClientUserInterface;
 import turing.client.io.TuringClientCommandLineInterface;
 import turing.client.io.TuringParser;
 
+import java.io.IOException;
+
 public class TuringClient {
     private ClientUserInterface CLI;
     private TuringParser parser;
@@ -47,10 +49,10 @@ public class TuringClient {
                 CLI.show(documentName);
             }
             else { // interface misuse
-                CLI.printHelp();
+                parser.printHelp();
             }
         }
-        catch (ParseException e) {
+        catch (ParseException | IOException e) {
             parser.printHelp();
         }
     }

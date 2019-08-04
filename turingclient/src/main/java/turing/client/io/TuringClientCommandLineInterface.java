@@ -25,7 +25,6 @@ import java.util.UUID;
  * Exposes and implements Client services for the Turing application
  */
 public class TuringClientCommandLineInterface implements ClientUserInterface {
-    // private static final File cachedCredentials = new File("./cache/credentials");
     private static final File cachedUserId = new File("./cache/userId");
 
     public TuringClientCommandLineInterface() { }
@@ -78,40 +77,68 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
 
     }
 
-    /**
-     * Send a login request to the server and wait for a response.
-     * If any response is received, it will be printed on screen.
-     * @param username  the username of the user
-     * @param password  the password of the user
-     */
-    @Override
-    public void login(String username, String password) {
+    //TODO: try erasing cached User ID and then make a request
+    private Optional<String> sendRequest(String requestName, JSONObject parameters, String successString,
+                                         String failureString, boolean includeAuth) {
         try {
-            var communication = new TcpCommunication(InetAddress.getLocalHost(), 1024);
-            var json = new JSONObject().put("login", new User(username, password).toJson());
-            communication.sendMessage(TcpMessage.makeRequest(json));
+            // Attach UserId (Auth) to the request body
+            if (includeAuth) {
+                Optional<UUID> userId = getSavedUserId();
+                if (!userId.isPresent()) {
+                    throw new IllegalStateException("Devi prima effettuare il login.");
+                }
+                else {
+                    parameters.put("userId", userId.get().toString());
+                }
+            }
 
+            // make payload
+            JSONObject payload = new JSONObject().put(requestName, parameters);
+
+            // Establish communication channel with the server
+            var communication = new TcpCommunication(InetAddress.getLocalHost(), 1024);
+            // Send request message to the server
+            communication.sendMessage(TcpMessage.makeRequest(payload));
+            // Receive response from the server
             Optional<TcpMessage> response = communication.consumeMessage();
+
             // If any response has been received
             if (response.isPresent()) {
                 // If the response contains any content
-                var content = response.get().getResponse();
-                if (content.isPresent()) {
-                    // If the login is successful the serve returns the UUID of the logged user
-                    String uuid = content.get();
-                    // If login successful: save the returned userId for later work
-                    if (response.get().getOk()) {
-                        saveUserId(UUID.fromString(uuid));
-                        System.out.println("Login effettuato con successo: " + content.get());
-                    }
-                    else {
-                        System.out.println("Impossibile effettuare il login: " + content.get());
-                    }
+                if (response.get().getOk()) {
+                    System.out.println(successString);
+                    return response.get().getResponse();
+                }
+                else {
+                    System.err.println(failureString);
+                    return Optional.empty();
                 }
             }
         }
         catch (Exception e) {
-            System.err.println("Errore: " + e.getLocalizedMessage());
+            System.err.println(failureString + ": " + e.getLocalizedMessage());
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Send a login request to the server and wait for a response.
+     * If any response is received, it will be printed on screen.
+     * Note: In case of a successful login, the server returns an unique ID to use as an authentication token for
+     *       subsequent requests.
+     * @param username  the username of the user
+     * @param password  the password of the user
+     */
+    @Override
+    public void login(String username, String password) throws IOException {
+        var parameters = new User(username, password).toJson();
+        Optional<String> response = sendRequest("login", parameters,
+                "Login effettuato con successo",
+                "Impossibile effettuare il login",
+                false);
+        if (response.isPresent()) {
+            saveUserId(UUID.fromString(response.get()));
         }
     }
 
@@ -122,25 +149,12 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
      */
     @Override
     public void logout() {
-        Optional<UUID> userId = getSavedUserId();
-        if (!userId.isPresent()) {
-            System.out.println("Devi aver prima eseguito l'accesso per poter effettuare il logout.");
-        } else {
-            try {
-                var communication = new TcpCommunication(InetAddress.getLocalHost(), 1024);
-                var json = new JSONObject().put("logout", new JSONObject().put("userId", userId.get()));
-                communication.sendMessage(TcpMessage.makeRequest(json));
-
-                Optional<TcpMessage> response = communication.consumeMessage();
-                // If any response has been received
-                // Print server response to screen if a "response" field is present
-                response.ifPresent(tcpMessage -> tcpMessage.getResponse().ifPresent(System.out::println));
-            } catch (Exception e) {
-                System.err.println("Errore: " + e.getLocalizedMessage());
-            }
-        }
+        var parameters = new JSONObject();
+        sendRequest("logout", parameters,
+                "Logout effettuato con successo",
+                "Impossibile effettuare il logout",
+                true);
     }
-
 
     /**
      * Send a 'create document' request to the server
@@ -156,96 +170,98 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
             System.out.println("Devi eseguire il login prima di poter effettuare un'operazione");
         }
         else {
-            try {
-                var communication = new TcpCommunication(InetAddress.getLocalHost(), 1024);
-                var doc = new Document(document, sections, userId.get());
-                var json = new JSONObject().put("create", doc.toJson());
-                communication.sendMessage(TcpMessage.makeRequest(json));
-
-                Optional<TcpMessage> response = communication.consumeMessage();
-                // If any response has been received
-                // Print server response to screen if a "response" field is present
-                response.ifPresent(tcpMessage -> tcpMessage.getResponse().ifPresent(System.out::println));
-            }
-            catch (Exception e) {
-                System.err.println("Errore: " + e.getLocalizedMessage());
-            }
+            var doc = new Document(document, sections, userId.get());
+            var parameters = doc.toJson();
+            sendRequest("create", parameters,
+                    "Documento creato con successo",
+                    "Impossibile creare documento",
+                    false);
         }
     }
 
+    /**
+     * Send a 'share document' request to the server
+     * If any response is received, it will be printed on screen.
+     * The credentials to be sent to the server have been previously cached.
+     * @param document
+     * @param username
+     */
     @Override
     public void share(String document, String username) {
-        Optional<UUID> userId = getSavedUserId();
-        if (!userId.isPresent()) {
-            System.out.println("Devi eseguire il login prima di poter effettuare un'operazione");
-        }
-        else {
-            try {
-                var communication = new TcpCommunication(InetAddress.getLocalHost(), 1024);
-                var invite = new Invitation(document, username);
-                var json = new JSONObject().put("share", invite.toJson().put("authorId", userId.get().toString()));
-                communication.sendMessage(TcpMessage.makeRequest(json));
-
-                Optional<TcpMessage> response = communication.consumeMessage();
-                // If any response has been received
-                // Print server response to screen if a "response" field is present
-                response.ifPresent(tcpMessage -> tcpMessage.getResponse().ifPresent(System.out::println));
-            }
-            catch (Exception e) {
-                System.err.println("Errore: " + e.getLocalizedMessage());
-            }
-        }
-
+        var invite = new Invitation(document, username);
+        var parameters = invite.toJson();
+        sendRequest("share", parameters,
+                "Documento condiviso con successo",
+                "Impossibile condividere documento",
+                false);
     }
 
+    /**
+     * Send a 'show section' request to the server
+     * If any response is received, it will be printed on screen.
+     * The credentials to be sent to the server have been previously cached.
+     * @param documentName
+     * @param section
+     */
     @Override
     public void show(String documentName, int section) {
-        Optional<UUID> userId = getSavedUserId();
-        if (!userId.isPresent()) {
-            System.out.println("Devi eseguire il login prima di poter effettuare un'operazione");
-        }
-        else {
-            try {
-                var communication = new TcpCommunication(InetAddress.getLocalHost(), 1024);
-                var json = new JSONObject().put("show", new JSONObject()
-                        .put("documentName", documentName)
-                        .put("section", section)
-                        .put("userId", userId.get()));
-                communication.sendMessage(TcpMessage.makeRequest(json));
-
-                Optional<TcpMessage> response = communication.consumeMessage();
-                // If any response has been received
-                // Print server response to screen if a "response" field is present
-                response.ifPresent(tcpMessage -> tcpMessage.getResponse().ifPresent(System.out::println));
-            }
-            catch (Exception e) {
-                System.err.println("Errore: " + e.getLocalizedMessage());
-            }
-        }
+        var parameters = new JSONObject()
+                .put("documentName", documentName)
+                .put("section", section);
+        Optional<String> response = sendRequest("show", parameters,
+                "Contenuto della sezione " + section + ": ",
+                "Impossibile visualizzare sezione",
+                true);
+        response.ifPresent(System.out::println);
     }
 
+    /**
+     * Send a 'show document' request to the server
+     * If any response is received, it will be printed on screen.
+     * The credentials to be sent to the server have been previously cached.
+     * @param documentName
+     */
     @Override
-    public void show(String document) throws ExecutionControl.NotImplementedException {
-        throw new ExecutionControl.NotImplementedException("Not implemented");
+    public void show(String documentName) throws ExecutionControl.NotImplementedException {
+        var parameters = new JSONObject().put("documentName", documentName);
+        Optional<String> response = sendRequest("show", parameters,
+                "Contenuto del documento: ",
+                "Impossibile visualizzare documento",
+                true);
+        response.ifPresent(System.out::println);
     }
 
+    /**
+     * Send a 'list documents' request to the server.
+     * If any response is received, it will be printed on screen.
+     * The credentials to be sent to the server have been previously cached.
+     */
     @Override
     public void list() {
 
     }
 
+    /**
+     * Send an 'edit section' request to the server.
+     * If any response is received, it will be printed on screen.
+     * The credentials to be sent to the server have been previously cached.
+     * @param document
+     * @param section
+     */
     @Override
     public void edit(String document, int section) {
 
     }
 
+    /**
+     * Send an 'end edit section' request to the server.
+     * If any response is received, it will be printed on screen.
+     * The credentials to be sent to the server have been previously cached.
+     * @param document
+     * @param section
+     */
     @Override
     public void endEdit(String document, int section) {
-
-    }
-
-    @Override
-    public void printHelp() {
 
     }
 }

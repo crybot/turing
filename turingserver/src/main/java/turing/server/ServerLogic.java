@@ -278,8 +278,40 @@ public class ServerLogic {
         communication.sendMessage(TcpMessage.makeResponse(response, ok));
     }
 
-    private void showDocument(String documentName, User user) throws ExecutionControl.NotImplementedException {
-        throw new ExecutionControl.NotImplementedException("showDocument() not implemented");
+    /**
+     * Send the client the content of the selected document
+     * Note: The user must have permissions to read the document.
+     * @param documentName  the name of the document
+     * @param user          the user sending the request
+     * @throws IOException
+     */
+    private void showDocument(String documentName, User user) throws IOException {
+        // Default response
+        String response = "User not logged in";
+        boolean ok = false;
+
+        if (serverState.isUserLoggedIn(user.name)) {
+            var userDocuments = getUserDocuments(user);
+            // If the user has the rights to read the document
+            if (userDocuments.stream().anyMatch(doc -> doc.getName().equals(documentName))) {
+                var document = documentDataManager.getByName(documentName);
+                // Check whether the document (redundant) and the selected section exists
+                if (document.isPresent()) {
+                    response = document.get().toString();
+                    ok = true;
+                }
+                else {
+                    response = "Could not open document " + documentName;
+                    ok = false;
+                }
+            }
+            else {
+                response = "User has no rights to access the document";
+                ok = false;
+            }
+        }
+        // Send response
+        communication.sendMessage(TcpMessage.makeResponse(response, ok));
     }
 
     /**

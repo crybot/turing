@@ -8,7 +8,8 @@ import java.io.Serializable;
 import java.util.*;
 
 /**
- *
+ * Represents a storable document.
+ * A Document is composed of a fixed number of sections, which can be modified but not added nor removed.
  */
 public class Document implements Serializable, MapsJson, Identifiable<UUID> {
     private UUID id;
@@ -60,5 +61,20 @@ public class Document implements Serializable, MapsJson, Identifiable<UUID> {
                 .put("sections", sections)
                 .put("authorId", authorId)
                 .put("id", id.toString());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof Document)) {
+            return false;
+        }
+        var other = (Document) obj;
+        return name.equals(other.name)
+                && sections.size() == other.sections.size()
+                && sections.containsAll(other.sections)
+                && toString().equals(other.toString());
     }
 }

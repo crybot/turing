@@ -91,7 +91,7 @@ public class ServerLogic {
             else if (json.has("share")) {
                 // example json request: {"share": {"documentName": "foo", "userName": "bar"}}
                 var invite = JsonMapper.fromJson(json.getJSONObject("share"), Invitation.class);
-                var authorId = UUID.fromString(json.getJSONObject("share").getString("authorId"));
+                var authorId = UUID.fromString(json.getJSONObject("share").getString("userId"));
                 var author = userDataManager.get(authorId);
                 if (author.isPresent()) {
                     shareDocument(invite.documentName, invite.userName, author.get());
@@ -361,11 +361,13 @@ public class ServerLogic {
         //  - get all (optional) documents indicated by the invitations;
         //  - flatten the list of Optional<Document>-s to a list Document-s
         //      (basically an application of the binding operator to a monad)
+        //  - filter out documents the user already owns
         var sharedDocuments = invitationDataManager.getByUser(user)
                 .stream()
                 .map(inv -> documentDataManager.getByName(inv.documentName))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
+                .filter(doc -> !ownedDocuments.contains(doc))
                 .collect(Collectors.toList());
 
         // concat the two lists and return the result

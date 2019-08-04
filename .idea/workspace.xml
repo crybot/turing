@@ -24,7 +24,7 @@
         <entry file="file://$PROJECT_DIR$/turingclient/src/main/java/turing/client/TuringClient.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="672">
-              <caret line="52" column="26" selection-start-line="52" selection-start-column="26" selection-end-line="52" selection-end-column="26" />
+              <caret line="13" column="4" selection-start-line="13" selection-start-column="4" selection-end-line="13" selection-end-column="4" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -44,17 +44,29 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/TuringClientCommandLineInterface.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="177">
-              <caret line="233" column="6" selection-start-line="233" selection-start-column="6" selection-end-line="233" selection-end-column="6" />
+            <state relative-caret-position="721">
+              <caret line="196" column="19" selection-start-line="196" selection-start-column="19" selection-end-line="196" selection-end-column="19" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/ClientUserInterface.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="990">
+              <caret line="18" column="60" selection-start-line="18" selection-start-column="60" selection-end-line="18" selection-end-column="60" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/turingserver/src/main/java/turing/server/ServerLogic.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state>
-              <caret line="208" column="5" selection-start-line="208" selection-start-column="5" selection-end-line="208" selection-end-column="5" />
+            <state relative-caret-position="672">
+              <caret line="366" column="54" selection-start-line="366" selection-start-column="54" selection-end-line="366" selection-end-column="54" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -103,12 +115,12 @@
         <option value="$PROJECT_DIR$/turingserver/src/main/java/turing/server/persistence/DocumentDataManager.java" />
         <option value="$PROJECT_DIR$/turingserver/src/main/java/turing/server/persistence/InvitationDataManager.java" />
         <option value="$PROJECT_DIR$/turingclient/src/main/java/turing/client/entrypoint/TuringClientEntryPoint.java" />
-        <option value="$PROJECT_DIR$/turingcore/src/main/java/turing/model/document/Document.java" />
-        <option value="$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/ClientUserInterface.java" />
         <option value="$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/TuringParser.java" />
-        <option value="$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/TuringClientCommandLineInterface.java" />
         <option value="$PROJECT_DIR$/turingclient/src/main/java/turing/client/TuringClient.java" />
+        <option value="$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/ClientUserInterface.java" />
+        <option value="$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/TuringClientCommandLineInterface.java" />
         <option value="$PROJECT_DIR$/turingserver/src/main/java/turing/server/ServerLogic.java" />
+        <option value="$PROJECT_DIR$/turingcore/src/main/java/turing/model/document/Document.java" />
       </list>
     </option>
   </component>
@@ -313,7 +325,6 @@
     </breakpoint-manager>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/turingserver/src/main/java/turing/client/entrypoint/TuringClientEntryPoint.java" />
     <entry file="file://$PROJECT_DIR$/turingserver/src/main/java/turing/client/TuringClientCommandLineInterface.java" />
     <entry file="file://$PROJECT_DIR$/turingcore/src/main/java/turing/communication/json/JsonStreamReader.java">
       <provider selected="true" editor-type-id="text-editor" />
@@ -620,49 +631,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/turingserver/src/main/java/turing/server/persistence/DocumentDataManager.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="275">
-          <caret line="18" column="61" selection-start-line="18" selection-start-column="61" selection-end-line="18" selection-end-column="61" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#565#566#0" expanded="true" />
-            <element signature="e#621#622#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/turingcore/src/main/java/turing/model/document/Document.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="519">
-          <caret line="46" column="12" selection-start-line="46" selection-start-column="12" selection-end-line="46" selection-end-column="12" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/ClientUserInterface.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1045">
-          <caret line="19" selection-start-line="19" selection-end-line="19" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/TuringClientCommandLineInterface.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="177">
-          <caret line="233" column="6" selection-start-line="233" selection-start-column="6" selection-end-line="233" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/turingclient/src/main/java/turing/client/TuringClient.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="672">
-          <caret line="52" column="26" selection-start-line="52" selection-start-column="26" selection-end-line="52" selection-end-column="26" />
+          <caret line="13" column="4" selection-start-line="13" selection-start-column="4" selection-end-line="13" selection-end-column="4" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -676,10 +648,66 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/TuringClientCommandLineInterface.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="721">
+          <caret line="196" column="19" selection-start-line="196" selection-start-column="19" selection-end-line="196" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jrt:///usr/lib/jvm/java-1.11.0-openjdk-amd64!/java.base/java/util/List.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="550">
+          <caret line="11" column="12" selection-start-line="11" selection-start-column="12" selection-end-line="11" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/turingserver/src/main/java/turing/server/persistence/DocumentDataManager.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="617">
+          <caret line="21" column="34" selection-start-line="21" selection-start-column="34" selection-end-line="21" selection-end-column="34" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#565#566#0" expanded="true" />
+            <element signature="e#621#622#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/turingcore/src/main/java/turing/model/document/Document.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1387">
+          <caret line="26" column="8" selection-start-line="26" selection-start-column="8" selection-end-line="26" selection-end-column="8" />
+          <folding>
+            <element signature="imports" expanded="true" />
+            <element signature="e#436#437#0" expanded="true" />
+            <element signature="e#501#502#0" expanded="true" />
+            <element signature="e#774#775#0" expanded="true" />
+            <element signature="e#805#806#0" expanded="true" />
+            <element signature="e#832#833#0" expanded="true" />
+            <element signature="e#857#858#0" expanded="true" />
+            <element signature="e#888#889#0" expanded="true" />
+            <element signature="e#915#916#0" expanded="true" />
+            <element signature="e#1206#1207#0" expanded="true" />
+            <element signature="e#1274#1275#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/turingserver/src/main/java/turing/server/ServerLogic.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret line="208" column="5" selection-start-line="208" selection-start-column="5" selection-end-line="208" selection-end-column="5" />
+        <state relative-caret-position="672">
+          <caret line="366" column="54" selection-start-line="366" selection-start-column="54" selection-end-line="366" selection-end-column="54" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/ClientUserInterface.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="990">
+          <caret line="18" column="60" selection-start-line="18" selection-start-column="60" selection-end-line="18" selection-end-column="60" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

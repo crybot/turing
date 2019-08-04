@@ -16,5 +16,5 @@ public interface ClientUserInterface {
     void list();
 
     void edit(String documnet, int section);
-    void endEdit(String document, int section);
+    void endEdit(String document, int section, String content);
 }

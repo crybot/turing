@@ -110,7 +110,8 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
                     return response.get().getResponse();
                 }
                 else {
-                    System.err.println(failureString);
+                    System.err.println(failureString + ": "
+                            + response.get().getResponse().orElse("Errore non specificato"));
                     return Optional.empty();
                 }
             }
@@ -193,7 +194,7 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
         sendRequest("share", parameters,
                 "Documento condiviso con successo",
                 "Impossibile condividere documento",
-                false);
+                true);
     }
 
     /**
@@ -255,7 +256,12 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
      */
     @Override
     public void edit(String document, int section) {
-
+        var parameters = new JSONObject();
+        Optional<String> response = sendRequest("edit", parameters,
+                "Sezione " + section + " del documento " + document + " scaricata con successo",
+                "Impossibile modificare la sezione",
+                true);
+        response.ifPresent(System.out::println);
     }
 
     /**
@@ -264,9 +270,10 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
      * The credentials to be sent to the server have been previously cached.
      * @param document
      * @param section
+     * @param content
      */
     @Override
-    public void endEdit(String document, int section) {
+    public void endEdit(String document, int section, String content) {
 
     }
 }

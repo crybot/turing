@@ -45,6 +45,8 @@ public class TuringParser extends DefaultParser {
                 .argName("doc> <sec")
                 .desc("mostra una sezione del documento")
                 .build());
+        options.addOption("list", false, "mostra la lista dei documenti");
+
 
         return options;
     }

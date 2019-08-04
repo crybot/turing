@@ -48,6 +48,10 @@ public class TuringClient {
                 String documentName = line.getOptionValue("show");
                 CLI.show(documentName);
             }
+            // Show list of documents
+            else if (line.hasOption("list")) {
+                CLI.list();
+            }
             else { // interface misuse
                 parser.printHelp();
             }

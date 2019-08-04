@@ -114,6 +114,19 @@ public class ServerLogic {
                 else if (request.has("documentName") && user.isPresent()) {
                     showDocument(request.getString("documentName"), user.get());
                 }
+                else {
+                    throw new IOException();
+                }
+            }
+            else if (json.has("list")) {
+                var request = json.getJSONObject("list");
+                var user = userDataManager.get(UUID.fromString(request.getString("userId")));
+                if (user.isPresent()) {
+                    listDocuments(user.get());
+                }
+                else {
+                    throw new IOException("Could not find user");
+                }
             }
             else {
                 throw new IOException("error");
@@ -310,6 +323,21 @@ public class ServerLogic {
                 ok = false;
             }
         }
+        // Send response
+        communication.sendMessage(TcpMessage.makeResponse(response, ok));
+    }
+
+    private void listDocuments(User user) throws IOException {
+        // Default response
+        String response = "User not logged in";
+        boolean ok = false;
+
+        if (serverState.isUserLoggedIn(user.name)) {
+            var userDocuments = getUserDocuments(user).stream().map(Document::getName).collect(Collectors.toList());
+            response = String.join(System.lineSeparator(), userDocuments);
+            ok = true;
+        }
+
         // Send response
         communication.sendMessage(TcpMessage.makeResponse(response, ok));
     }

@@ -238,7 +238,12 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
      */
     @Override
     public void list() {
-
+        var parameters = new JSONObject();
+        Optional<String> response = sendRequest("list", parameters,
+                "Documenti modificabili: ",
+                "Impossibile visualizzare la lista dei documenti",
+                true);
+        response.ifPresent(System.out::println);
     }
 
     /**

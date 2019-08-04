@@ -222,7 +222,7 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
      * @param documentName
      */
     @Override
-    public void show(String documentName) throws ExecutionControl.NotImplementedException {
+    public void show(String documentName) {
         var parameters = new JSONObject().put("documentName", documentName);
         Optional<String> response = sendRequest("show", parameters,
                 "Contenuto del documento: ",

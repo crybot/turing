@@ -44,8 +44,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/TuringClientCommandLineInterface.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="385">
-              <caret line="143" selection-start-line="143" selection-end-line="143" />
+            <state>
+              <caret line="231" selection-start-line="231" selection-end-line="231" />
             </state>
           </provider>
         </entry>
@@ -106,9 +106,9 @@
         <option value="$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/TuringParser.java" />
         <option value="$PROJECT_DIR$/turingcore/src/main/java/turing/model/document/Document.java" />
         <option value="$PROJECT_DIR$/turingserver/src/main/java/turing/server/ServerLogic.java" />
-        <option value="$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/TuringClientCommandLineInterface.java" />
         <option value="$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/ClientUserInterface.java" />
         <option value="$PROJECT_DIR$/turingclient/src/main/java/turing/client/TuringClient.java" />
+        <option value="$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/TuringClientCommandLineInterface.java" />
       </list>
     </option>
   </component>
@@ -681,8 +681,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/TuringClientCommandLineInterface.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="385">
-          <caret line="143" selection-start-line="143" selection-end-line="143" />
+        <state>
+          <caret line="231" selection-start-line="231" selection-end-line="231" />
         </state>
       </provider>
     </entry>

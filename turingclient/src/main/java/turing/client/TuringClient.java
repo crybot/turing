@@ -52,6 +52,11 @@ public class TuringClient {
             else if (line.hasOption("list")) {
                 CLI.list();
             }
+            else if (line.hasOption("edit")) {
+                String documentName = line.getOptionValues("edit")[0];
+                int section = Integer.parseInt(line.getOptionValues("edit")[1]);
+                CLI.edit(documentName, section);
+            }
             else { // interface misuse
                 parser.printHelp();
             }

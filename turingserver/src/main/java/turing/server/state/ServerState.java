@@ -14,9 +14,11 @@ import java.util.UUID;
 public class ServerState {
     //TODO: map users with users
     private Map<String, User> loggedUsers;
+    private Map<String, Map<Integer, User>> editableSections;
 
     public ServerState() {
         loggedUsers = new HashMap<>();
+        editableSections = new HashMap<>();
     }
 
     public Optional<User> getLoggedUser(String username) {
@@ -35,5 +37,30 @@ public class ServerState {
         loggedUsers.remove(user.name);
     }
 
+    public Optional<User> getUserEditingSection(String documentName, int section) {
+        if (editableSections.containsKey(documentName)) {
+            return Optional.ofNullable(editableSections.get(documentName).getOrDefault(section, null));
+        }
+        return Optional.empty();
+    }
 
+    public boolean isSectionBeingEdited(String documentName, int section) {
+        if (!editableSections.containsKey(documentName)) {
+            return false;
+        }
+        return editableSections.get(documentName).containsKey(section);
+    }
+
+    public void setSectionEditable(String documentName, int section, User userEditing) {
+        editableSections.putIfAbsent(documentName, new HashMap<>());
+        if (editableSections.containsKey(documentName)) {
+            editableSections.get(documentName).putIfAbsent(section, userEditing);
+        }
+    }
+
+    public void setSectionNotEditable(String documentName, int section) {
+        if (editableSections.containsKey(documentName)) {
+            editableSections.get(documentName).remove(section);
+        }
+    }
 }

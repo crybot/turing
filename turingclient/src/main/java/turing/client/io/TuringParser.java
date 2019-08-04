@@ -46,6 +46,16 @@ public class TuringParser extends DefaultParser {
                 .desc("mostra una sezione del documento")
                 .build());
         options.addOption("list", false, "mostra la lista dei documenti");
+        options.addOption(Option.builder("edit")
+                .numberOfArgs(2)
+                .argName("doc> <sec")
+                .desc("modifica una sezione del documento")
+                .build());
+        options.addOption(Option.builder("endedit")
+                .numberOfArgs(2)
+                .argName("doc> <sec")
+                .desc("fine modifica della sezione del documento")
+                .build());
 
 
         return options;

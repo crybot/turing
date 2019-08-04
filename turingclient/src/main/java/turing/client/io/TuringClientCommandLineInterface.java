@@ -256,7 +256,9 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
      */
     @Override
     public void edit(String document, int section) {
-        var parameters = new JSONObject();
+        var parameters = new JSONObject()
+                .put("documentName", document)
+                .put("section", section);
         Optional<String> response = sendRequest("edit", parameters,
                 "Sezione " + section + " del documento " + document + " scaricata con successo",
                 "Impossibile modificare la sezione",

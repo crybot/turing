@@ -128,6 +128,16 @@ public class ServerLogic {
                     throw new IOException("Could not find user");
                 }
             }
+            else if (json.has("edit")) {
+                var request = json.getJSONObject("edit");
+                var user = userDataManager.get(UUID.fromString(request.getString("userId")));
+                if (user.isPresent()) {
+                    editSection(request.getString("documentName"), request.getInt("section"), user.get());
+                }
+                else {
+                    throw new IOException("Could not find user");
+                }
+            }
             else {
                 throw new IOException("error");
             }
@@ -262,7 +272,7 @@ public class ServerLogic {
      * @param section       the document's section's number
      * @param user          the user sending the request
      */
-    private void showSection(String documentName, int section, User user) throws IOException {
+    private boolean showSection(String documentName, int section, User user) throws IOException {
         // Default response
         String response = "User not logged in";
         boolean ok = false;
@@ -289,6 +299,7 @@ public class ServerLogic {
         }
         // Send response
         communication.sendMessage(TcpMessage.makeResponse(response, ok));
+        return ok;
     }
 
     /**
@@ -345,6 +356,24 @@ public class ServerLogic {
 
         // Send response
         communication.sendMessage(TcpMessage.makeResponse(response, ok));
+    }
+
+    /**
+     * Send the client the current working copy of the section of choice and allow the user to modify it.
+     * To modify the section, an endEditSection request must be sent to the server by the client, with the modified text
+     * as parameter
+     * @param documentName  the name of the document
+     * @param section       the document's section's number
+     * @param user          the user sending the request
+     */
+    private void editSection(String documentName, int section, User user) throws IOException {
+        if (serverState.isSectionBeingEdited(documentName, section)) {
+            communication.sendMessage(TcpMessage.makeResponse("Section already being edited", false));
+        }
+        // showSection handles user conditions (is he logged in, does he have permissions...)
+        else if (showSection(documentName, section, user)) {
+            serverState.setSectionEditable(documentName, section, user);
+        }
     }
 
     /**

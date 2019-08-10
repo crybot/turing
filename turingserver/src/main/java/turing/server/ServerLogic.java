@@ -138,6 +138,17 @@ public class ServerLogic {
                     throw new IOException("Could not find user");
                 }
             }
+            else if (json.has("endEdit")) {
+                var request = json.getJSONObject("endEdit");
+                var content = request.getString("content");
+                var user = userDataManager.get(UUID.fromString(request.getString("userId")));
+                if (user.isPresent()) {
+                    endEditSection(request.getString("documentName"), request.getInt("section"), content, user.get());
+                }
+                else {
+                    throw new IOException("Could not find user");
+                }
+            }
             else {
                 throw new IOException("error");
             }
@@ -374,6 +385,43 @@ public class ServerLogic {
         else if (showSection(documentName, section, user)) {
             serverState.setSectionEditable(documentName, section, user);
         }
+    }
+
+    /**
+     * Make the changes to the selected section permanent.
+     * An edit section request must have been previously performed by the same user making the end edit request.
+     * @param documentName  the name of the document
+     * @param section       the document's section's number
+     * @param content       the new content of the edited section
+     * @param user          the user sending the request
+     * @throws IOException
+     */
+    private void endEditSection(String documentName, int section, String content, User user) throws IOException {
+        String response;
+        boolean ok;
+
+        // If there exists a document with the given name and
+        // the selected section is being edited by the same user making the request
+        if (documentDataManager.getByName(documentName).isPresent() &&
+                user.equals(serverState.getUserEditingSection(documentName, section).orElse(null))) {
+
+            // Mark the section as not being edited anymore
+            serverState.setSectionNotEditable(documentName, section);
+            // Get the document object as we know it exists
+            Document doc =  documentDataManager.getByName(documentName).get();
+            doc.setSection(section, content);
+            documentDataManager.update(doc);
+            response = "Section " + section +
+                    " of document " + documentName +
+                    " correctly updated";
+            ok = true;
+        }
+        else {
+            response = "User not editing the document";
+            ok = false;
+        }
+
+        communication.sendMessage(TcpMessage.makeResponse(response, ok));
     }
 
     /**

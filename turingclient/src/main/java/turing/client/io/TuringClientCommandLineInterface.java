@@ -1,33 +1,75 @@
 package turing.client.io;
 
-import jdk.jshell.spi.ExecutionControl;
 import org.json.JSONObject;
 import turing.communication.tcp.TcpCommunication;
 import turing.communication.tcp.TcpMessage;
 import turing.model.document.Document;
 import turing.model.invitation.Invitation;
 import turing.model.user.User;
-import turing.util.stream.StreamUtils;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channel;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.file.Files;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 /**
  * Exposes and implements Client services for the Turing application
  */
+//TODO: move caching logic into TuringClient. It does not make sense to handle it inside the CLI interface.
 public class TuringClientCommandLineInterface implements ClientUserInterface {
     private static final File cachedUserId = new File("./cache/userId");
 
     public TuringClientCommandLineInterface() { }
+
+    private File getSectionFile(String documentName, int section) {
+        return new File("./cache/" + documentName + "/" + section);
+    }
+
+    /**
+     * Store the content of the section being edited in a persistent location for later work.
+     * @param documentName  name of the document whose section is being edited
+     * @param section       number of the section being edited
+     * @param content       content of the section bein edited
+     * @throws IOException  if the cached file does not exist and cannot be created
+     */
+    // TODO: move into turing-core: persistence.Persistence.store(bytes[] content, File file)
+    private void saveSection(String documentName, int section, String content) throws IOException {
+        File sectionFile = getSectionFile(documentName, section);
+        // Create section file (and its parent directories) if it does not exist
+        if (!sectionFile.exists()) {
+            sectionFile.getParentFile().mkdirs();
+            Files.createFile(sectionFile.toPath());
+        }
+        ByteBuffer buffer = ByteBuffer.wrap(content.getBytes());
+        FileChannel channel = new FileOutputStream(sectionFile).getChannel();
+        channel.write(buffer);
+        channel.close();
+    }
+
+    // TODO: move into turing-core: persistence.Persistence.retrieve(File file)
+    private Optional<String> getSavedSection(String documentName, int section) throws IOException {
+        File sectionFile = getSectionFile(documentName, section);
+        if (!sectionFile.exists()) {
+            return Optional.empty();
+        }
+        try(FileChannel channel = FileChannel.open(sectionFile.toPath())) {
+            var buffer = channel.map(FileChannel.MapMode.READ_ONLY, 0, sectionFile.length());
+            // Decode the bytebuffer with the default charset
+            Charset charset = Charset.defaultCharset();
+            CharsetDecoder decoder = charset.newDecoder();
+
+            String content = decoder.decode(buffer).toString();
+            return Optional.of(content);
+        }
+        catch (Exception e) {
+            return Optional.empty();
+        }
+    }
 
     /**
      * Store users's UUID in a persistent location for later work.
@@ -255,7 +297,7 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
      * @param section
      */
     @Override
-    public void edit(String document, int section) {
+    public void edit(String document, int section) throws IOException {
         var parameters = new JSONObject()
                 .put("documentName", document)
                 .put("section", section);
@@ -263,7 +305,10 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
                 "Sezione " + section + " del documento " + document + " scaricata con successo",
                 "Impossibile modificare la sezione",
                 true);
-        response.ifPresent(System.out::println);
+
+        if (response.isPresent()) {
+            saveSection(document, section, response.get());
+        }
     }
 
     /**
@@ -272,10 +317,20 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
      * The credentials to be sent to the server have been previously cached.
      * @param document
      * @param section
-     * @param content
      */
     @Override
-    public void endEdit(String document, int section, String content) {
-
+    public void endEdit(String document, int section) throws IOException {
+        var content = getSavedSection(document, section);
+        if (!content.isPresent()) {
+            throw new IOException("Impossibile trovare la sezione richiesta, potrebbe essere stata eliminata.");
+        }
+        var parameters = new JSONObject()
+                .put("documentName", document)
+                .put("section", section)
+                .put("content", content.get());
+        sendRequest("endEdit", parameters,
+                "Sezione " + section + " del documento " + document + " aggiornata con successo",
+                "Impossibile modificare la sezione",
+                true);
     }
 }

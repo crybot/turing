@@ -7,7 +7,15 @@ import turing.client.io.ClientUserInterface;
 import turing.client.io.TuringClientCommandLineInterface;
 import turing.client.io.TuringParser;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.file.Files;
+import java.util.Optional;
 
 public class TuringClient {
     private ClientUserInterface CLI;
@@ -17,6 +25,7 @@ public class TuringClient {
         CLI = new TuringClientCommandLineInterface();
         parser = new TuringParser();
     }
+
 
     public void start(String[] args) throws ExecutionControl.NotImplementedException {
         try {
@@ -52,17 +61,27 @@ public class TuringClient {
             else if (line.hasOption("list")) {
                 CLI.list();
             }
+            // Retrieve the content of a document's section from the server and start editing it
             else if (line.hasOption("edit")) {
                 String documentName = line.getOptionValues("edit")[0];
                 int section = Integer.parseInt(line.getOptionValues("edit")[1]);
                 CLI.edit(documentName, section);
             }
+            // End the editing of a section and send the new content to the server
+            else if (line.hasOption("endedit")) {
+                String documentName = line.getOptionValues("endedit")[0];
+                int section = Integer.parseInt(line.getOptionValues("endedit")[1]);
+                CLI.endEdit(documentName, section);
+            }
             else { // interface misuse
                 parser.printHelp();
             }
         }
-        catch (ParseException | IOException e) {
+        catch (ParseException e) {
             parser.printHelp();
+        }
+        catch (IOException e) {
+            System.err.println(e.getLocalizedMessage());
         }
     }
 

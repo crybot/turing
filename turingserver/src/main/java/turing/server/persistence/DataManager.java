@@ -9,10 +9,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.IntStream;
 
 /**
  * Define CRUD operations on persistent data-types
@@ -97,6 +95,34 @@ public abstract class DataManager<K, T extends Identifiable<K> & MapsJson> {
     }
 
     protected abstract boolean contains(List<T> entities, T entity);
-    public abstract boolean update(T entity);
+
+    public boolean update(T entity) {
+        if (entity == null || entity.getId() == null) {
+            return false;
+        }
+
+        List<T> entities = getAll();
+
+        //TODO: T could override equals and the contains might be completely specified
+        //      inside the abstract class
+        if (!contains(entities, entity)) {
+            return false;
+        }
+        OptionalInt index = IntStream.range(0, entities.size())
+                .filter(i -> entities.get(i).getId().equals(entity.getId()))
+                .findFirst();
+        index.ifPresent(i -> entities.set(i, entity));
+
+        try {
+            StreamUtils.serializeEntities(entities, collectionName, new FileOutputStream(getFile()));
+        }
+        catch (IOException e) {
+            return false;
+        }
+
+        return true;
+
+    }
+
     public abstract boolean delete(T entity);
 }

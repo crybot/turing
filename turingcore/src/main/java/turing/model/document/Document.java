@@ -49,6 +49,12 @@ public class Document implements Serializable, MapsJson, Identifiable<UUID> {
         }
     }
 
+    public void setSection(int section, String content) throws IndexOutOfBoundsException {
+        if (section <= sections.size() && section > 0) {
+            sections.set(section - 1, content);
+        }
+    }
+
     @Override
     public String toString() {
         return String.join(System.lineSeparator(), sections);

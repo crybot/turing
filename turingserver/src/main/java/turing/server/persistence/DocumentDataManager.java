@@ -41,12 +41,6 @@ public class DocumentDataManager extends DataManager<UUID, Document> {
 
     @Override
     //TODO: implement
-    public boolean update(Document entity) {
-        return false;
-    }
-
-    @Override
-    //TODO: implement
     public boolean delete(Document entity) {
         return false;
     }

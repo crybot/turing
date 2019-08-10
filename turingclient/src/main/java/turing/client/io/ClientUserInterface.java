@@ -11,10 +11,10 @@ public interface ClientUserInterface {
 
     void create(String document, int sections);
     void share(String document, String username);
-    void show(String document, int section) throws ExecutionControl.NotImplementedException;
-    void show(String document) throws ExecutionControl.NotImplementedException;
+    void show(String document, int section);
+    void show(String document);
     void list();
 
-    void edit(String documnet, int section);
-    void endEdit(String document, int section, String content);
+    void edit(String documnet, int section) throws IOException;
+    void endEdit(String document, int section) throws IOException;
 }

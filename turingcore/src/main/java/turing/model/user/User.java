@@ -36,6 +36,20 @@ public class User implements Serializable, MapsJson, Identifiable<UUID> {
     }
 
     @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof User)) {
+            return false;
+        }
+        var other = (User) obj;
+        return name.equals(other.name)
+                && password.equals(other.password)
+                && id.equals(other.id);
+    }
+
+    @Override
     public String toString() {
         return "{ name=" + name + " password=" + password + " id=" + id + " }";
     }

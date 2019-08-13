@@ -32,7 +32,7 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/turingserver/src/main/java/turing/server/ServerLogic.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="12045">
@@ -47,8 +47,20 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/TuringClientCommandLineInterface.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="617">
-              <caret line="335" column="23" selection-start-line="335" selection-start-column="23" selection-end-line="335" selection-end-column="23" />
+            <state relative-caret-position="660">
+              <caret line="38" column="1" selection-start-line="38" selection-start-column="1" selection-end-line="38" selection-end-column="1" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/turingserver/src/main/java/turing/server/communication/rmi/RemoteRegistrationService.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="353">
+              <caret line="17" column="8" selection-start-line="17" selection-start-column="8" selection-end-line="17" selection-end-column="8" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -59,8 +71,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/turingserver/src/main/java/turing/server/TuringServer.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1112">
-              <caret line="29" column="8" selection-start-line="29" selection-start-column="8" selection-end-line="29" selection-end-column="8" />
+            <state relative-caret-position="935">
+              <caret line="40" column="12" selection-start-line="40" selection-start-column="12" selection-end-line="40" selection-end-column="12" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -111,11 +123,11 @@
         <option value="$PROJECT_DIR$/turingserver/src/main/java/turing/server/state/ServerState.java" />
         <option value="$PROJECT_DIR$/turingserver/src/main/java/turing/server/ServerLogic.java" />
         <option value="$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/TuringParser.java" />
-        <option value="$PROJECT_DIR$/turingserver/src/main/java/turing/server/communication/rmi/RemoteRegistrationService.java" />
         <option value="$PROJECT_DIR$/turingserver/src/main/java/turing/server/persistence/UserDataManager.java" />
         <option value="$PROJECT_DIR$/turingclient/src/main/java/turing/client/TuringClient.java" />
-        <option value="$PROJECT_DIR$/turingserver/src/main/java/turing/server/TuringServer.java" />
         <option value="$PROJECT_DIR$/turingcore/src/main/java/turing/communication/rmi/RegistrationService.java" />
+        <option value="$PROJECT_DIR$/turingserver/src/main/java/turing/server/communication/rmi/RemoteRegistrationService.java" />
+        <option value="$PROJECT_DIR$/turingserver/src/main/java/turing/server/TuringServer.java" />
         <option value="$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/TuringClientCommandLineInterface.java" />
       </list>
     </option>
@@ -236,6 +248,40 @@
               <item name="turingserver" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="main" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="turing" type="b2602c69:ProjectViewProjectNode" />
+              <item name="turingserver" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="turing" type="b2602c69:ProjectViewProjectNode" />
+              <item name="turingserver" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="server" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="turing" type="b2602c69:ProjectViewProjectNode" />
+              <item name="turingserver" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="server" type="462c0819:PsiDirectoryNode" />
+              <item name="communication" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="turing" type="b2602c69:ProjectViewProjectNode" />
+              <item name="turingserver" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="main" type="462c0819:PsiDirectoryNode" />
+              <item name="java" type="462c0819:PsiDirectoryNode" />
+              <item name="server" type="462c0819:PsiDirectoryNode" />
+              <item name="communication" type="462c0819:PsiDirectoryNode" />
+              <item name="rmi" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -682,30 +728,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/turingserver/src/main/java/turing/server/communication/rmi/RemoteRegistrationService.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="16" column="8" selection-start-line="16" selection-start-column="8" selection-end-line="16" selection-end-column="8" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/turingcore/src/main/java/turing/communication/rmi/RegistrationService.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="330">
           <caret line="6" column="4" selection-start-line="6" selection-start-column="4" selection-end-line="6" selection-end-column="4" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/turingserver/src/main/java/turing/server/TuringServer.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1112">
-          <caret line="29" column="8" selection-start-line="29" selection-start-column="8" selection-end-line="29" selection-end-column="8" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
@@ -722,20 +748,40 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/TuringClientCommandLineInterface.java">
+    <entry file="file://$PROJECT_DIR$/turingserver/src/main/java/turing/server/ServerLogic.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="617">
-          <caret line="335" column="23" selection-start-line="335" selection-start-column="23" selection-end-line="335" selection-end-column="23" />
+        <state relative-caret-position="12045">
+          <caret line="242" column="8" selection-start-line="242" selection-start-column="8" selection-end-line="242" selection-end-column="8" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/turingserver/src/main/java/turing/server/ServerLogic.java">
+    <entry file="file://$PROJECT_DIR$/turingclient/src/main/java/turing/client/io/TuringClientCommandLineInterface.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="12045">
-          <caret line="242" column="8" selection-start-line="242" selection-start-column="8" selection-end-line="242" selection-end-column="8" />
+        <state relative-caret-position="660">
+          <caret line="38" column="1" selection-start-line="38" selection-start-column="1" selection-end-line="38" selection-end-column="1" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/turingserver/src/main/java/turing/server/TuringServer.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="935">
+          <caret line="40" column="12" selection-start-line="40" selection-start-column="12" selection-end-line="40" selection-end-column="12" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/turingserver/src/main/java/turing/server/communication/rmi/RemoteRegistrationService.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="353">
+          <caret line="17" column="8" selection-start-line="17" selection-start-column="8" selection-end-line="17" selection-end-column="8" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

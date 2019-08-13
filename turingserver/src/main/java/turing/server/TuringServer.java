@@ -37,10 +37,9 @@ public class TuringServer implements ServerInterface {
      */
     private void publishRegistrationService() throws RemoteException {
         RemoteRegistrationService registrationService = new RemoteRegistrationService(serverState);
-        RegistrationService stub = (RegistrationService) UnicastRemoteObject.exportObject(registrationService, 0);
         LocateRegistry.createRegistry(RegistrationService.REGISTRY_PORT);
         Registry registry = LocateRegistry.getRegistry(RegistrationService.REGISTRY_PORT);
-        registry.rebind(RegistrationService.SERVICE_NAME, stub);
+        registry.rebind(RegistrationService.SERVICE_NAME, registrationService);
     }
 
     /**

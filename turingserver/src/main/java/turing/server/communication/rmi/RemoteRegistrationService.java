@@ -7,12 +7,14 @@ import turing.server.state.ServerState;
 
 import java.rmi.RemoteException;
 import java.rmi.server.RemoteServer;
+import java.rmi.server.UnicastRemoteObject;
 
-public class RemoteRegistrationService extends RemoteServer implements RegistrationService {
+public class RemoteRegistrationService extends UnicastRemoteObject implements RegistrationService {
     private ServerState serverState;
     private UserDataManager userDataManager;
 
-    public RemoteRegistrationService(ServerState serverState) {
+    public RemoteRegistrationService(ServerState serverState) throws RemoteException {
+        super();
         this.serverState = serverState;
         userDataManager = new UserDataManager("./model/user/users");
     }

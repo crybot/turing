@@ -1,7 +1,1 @@
-{
-    "users": [{
-        "name": "foo",
-        "password": "bar",
-        "id": "a47d4a3d-b8c2-4849-b837-64a394f0d783"
-    }]
-}
+{"users":[{"password":"bar","name":"foo","id":"a47d4a3d-b8c2-4849-b837-64a394f0d783"},{"password":"prova","name":"crybot","id":"1160c4ba-cb85-4e52-b441-ef63e4589242"},{"password":"password","name":"newuser","id":"0690a884-ab31-4e4f-bcb6-d83178ecbafc"}]}

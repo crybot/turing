@@ -51,14 +51,14 @@ public class ServerState {
         return editableSections.get(documentName).containsKey(section);
     }
 
-    public void setSectionEditable(String documentName, int section, User userEditing) {
+    public void setEditingSection(String documentName, int section, User userEditing) {
         editableSections.putIfAbsent(documentName, new HashMap<>());
         if (editableSections.containsKey(documentName)) {
             editableSections.get(documentName).putIfAbsent(section, userEditing);
         }
     }
 
-    public void setSectionNotEditable(String documentName, int section) {
+    public void unsetEditingSection(String documentName, int section) {
         if (editableSections.containsKey(documentName)) {
             editableSections.get(documentName).remove(section);
         }

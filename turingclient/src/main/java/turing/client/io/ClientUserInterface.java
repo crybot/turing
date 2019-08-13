@@ -5,7 +5,7 @@ import jdk.jshell.spi.ExecutionControl;
 import java.io.IOException;
 
 public interface ClientUserInterface {
-    void register(String username, String password);
+    void register(String username, String password) throws ExecutionControl.NotImplementedException;
     void login(String username, String password) throws IOException;
     void logout();
 

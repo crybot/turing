@@ -1,12 +1,6 @@
 package turing.server.persistence;
 
 import turing.model.user.User;
-import turing.util.stream.StreamUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -27,21 +21,8 @@ public class UserDataManager extends DataManager<UUID, User> {
     }
 
     @Override
-    //TODO: implement
-    public Optional<UUID> create(User entity) {
-        return Optional.empty();
-    }
-
-    @Override
-    //TODO: implement
     protected boolean contains(List<User> entities, User entity) {
-        return false;
-    }
-
-    @Override
-    //TODO: implement
-    public boolean update(User entity) {
-        return false;
+        return entities.stream().anyMatch(u -> u.name.equals(entity.name));
     }
 
     @Override

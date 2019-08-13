@@ -1,6 +1,8 @@
 package turing.client.io;
 
+import jdk.jshell.spi.ExecutionControl;
 import org.json.JSONObject;
+import turing.communication.rmi.RegistrationService;
 import turing.communication.tcp.TcpCommunication;
 import turing.communication.tcp.TcpMessage;
 import turing.model.document.Document;
@@ -14,6 +16,10 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.file.Files;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -21,10 +27,18 @@ import java.util.UUID;
  * Exposes and implements Client services for the Turing application
  */
 //TODO: move caching logic into TuringClient. It does not make sense to handle it inside the CLI interface.
+//TODO: refactor code
 public class TuringClientCommandLineInterface implements ClientUserInterface {
     private static final File cachedUserId = new File("./cache/userId");
+    private RegistrationService registrationService;
+    private InetAddress serverAddress; //TODO: use this instead of InetAddress.getLocalHost() (search and replace)
 
-    public TuringClientCommandLineInterface() { }
+    public TuringClientCommandLineInterface(InetAddress serverAddress) throws Exception {
+        this.serverAddress = serverAddress;
+        Registry registry = LocateRegistry.getRegistry(serverAddress.getHostAddress(),
+                RegistrationService.REGISTRY_PORT);
+        registrationService = (RegistrationService) registry.lookup(RegistrationService.SERVICE_NAME);
+    }
 
     private File getSectionFile(String documentName, int section) {
         return new File("./cache/" + documentName + "/" + section);
@@ -113,12 +127,6 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
 
     }
 
-
-    @Override
-    public void register(String username, String password) {
-
-    }
-
     //TODO: try erasing cached User ID and then make a request
     private Optional<String> sendRequest(String requestName, JSONObject parameters, String successString,
                                          String failureString, boolean includeAuth) {
@@ -165,6 +173,20 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
         return Optional.empty();
     }
 
+    /**
+     * Invoke the remote registration service published by the server and print the response to screen.
+     * @param username
+     * @param password
+     */
+    @Override
+    public void register(String username, String password) {
+        try {
+            String response = registrationService.register(username, password);
+            System.out.println(response);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
     /**
      * Send a login request to the server and wait for a response.
      * If any response is received, it will be printed on screen.
@@ -306,8 +328,24 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
                 "Impossibile modificare la sezione",
                 true);
 
+        // If a response is present (meaning the request was successful)
         if (response.isPresent()) {
+            // Save the section content into a a file on the client machine
             saveSection(document, section, response.get());
+            // Get the path of the file and open an editor (gedit by deafult, because it is commonly installed on most
+            // machines)
+            File sectionFile = getSectionFile(document, section);
+            ProcessBuilder builder = new ProcessBuilder(
+                    "gedit", sectionFile.getAbsolutePath());
+            Process editorProcess = builder.start();
+            /**
+             * Uncomment this to let the client wait for the editor to close
+             */
+            // try {
+            //     editorProcess.waitFor();
+            // }
+            // catch (InterruptedException e) {
+            // }
         }
     }
 

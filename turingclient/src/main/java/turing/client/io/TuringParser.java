@@ -4,7 +4,7 @@ import org.apache.commons.cli.*;
 
 public class TuringParser extends DefaultParser {
     private Options options;
-    HelpFormatter formatter;
+    private HelpFormatter formatter;
 
     public TuringParser() {
         options = setupOptions();
@@ -20,7 +20,11 @@ public class TuringParser extends DefaultParser {
         options.addOption("help", "mostra questo messaggio di help");
 
         /* Users */
-        // options.addOption("register", true, "registra l'utente");
+        options.addOption(Option.builder("register")
+                .numberOfArgs(2)
+                .argName("username> <password")
+                .desc("registra l'utente")
+                .build());
         options.addOption(Option.builder("login")
                 .numberOfArgs(2)
                 .argName("username> <password")

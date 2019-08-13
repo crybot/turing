@@ -7,22 +7,15 @@ import turing.client.io.ClientUserInterface;
 import turing.client.io.TuringClientCommandLineInterface;
 import turing.client.io.TuringParser;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import java.nio.file.Files;
-import java.util.Optional;
+import java.net.InetAddress;
 
 public class TuringClient {
     private ClientUserInterface CLI;
     private TuringParser parser;
 
-    public TuringClient() {
-        CLI = new TuringClientCommandLineInterface();
+    public TuringClient() throws Exception {
+        CLI = new TuringClientCommandLineInterface(InetAddress.getLocalHost());
         parser = new TuringParser();
     }
 
@@ -30,7 +23,10 @@ public class TuringClient {
     public void start(String[] args) throws ExecutionControl.NotImplementedException {
         try {
             CommandLine line = parser.parse(args);
-            if (line.hasOption("login")) {
+            if (line.hasOption("register")){
+                CLI.register(line.getOptionValues("register")[0], line.getOptionValues("register")[1]);
+            }
+            else if (line.hasOption("login")) {
                 CLI.login(line.getOptionValues("login")[0], line.getOptionValues("login")[1]);
             }
             else if (line.hasOption("logout")) {

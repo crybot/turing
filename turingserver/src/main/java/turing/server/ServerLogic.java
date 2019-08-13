@@ -1,6 +1,5 @@
 package turing.server;
 
-import jdk.jshell.spi.ExecutionControl;
 import org.json.JSONObject;
 import turing.communication.Communication;
 import turing.communication.JsonPaylod;
@@ -200,6 +199,14 @@ public class ServerLogic {
         communication.sendMessage(TcpMessage.makeResponse(response, ok));
     }
 
+    /**
+     * Log out the given user
+     * The user have to be registered to the service.
+     * The user must be already logged in.
+     * @param username
+     * @param password
+     * @throws IOException
+     */
     private void logout(String username, String password) throws IOException {
         System.out.println("User " + username  + " requested to logout" );
 
@@ -383,7 +390,7 @@ public class ServerLogic {
         }
         // showSection handles user conditions (is he logged in, does he have permissions...)
         else if (showSection(documentName, section, user)) {
-            serverState.setSectionEditable(documentName, section, user);
+            serverState.setEditingSection(documentName, section, user);
         }
     }
 
@@ -404,9 +411,8 @@ public class ServerLogic {
         // the selected section is being edited by the same user making the request
         if (documentDataManager.getByName(documentName).isPresent() &&
                 user.equals(serverState.getUserEditingSection(documentName, section).orElse(null))) {
-
             // Mark the section as not being edited anymore
-            serverState.setSectionNotEditable(documentName, section);
+            serverState.unsetEditingSection(documentName, section);
             // Get the document object as we know it exists
             Document doc =  documentDataManager.getByName(documentName).get();
             doc.setSection(section, content);

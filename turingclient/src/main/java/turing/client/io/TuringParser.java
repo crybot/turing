@@ -17,6 +17,8 @@ public class TuringParser extends DefaultParser {
 
     private Options setupOptions() {
         Options options = new Options();
+
+        /* Help */
         options.addOption("help", "mostra questo messaggio di help");
 
         /* Users */
@@ -61,6 +63,13 @@ public class TuringParser extends DefaultParser {
                 .desc("fine modifica della sezione del documento")
                 .build());
 
+        /* Chat */
+        options.addOption(Option.builder("send")
+                .numberOfArgs(1)
+                .argName("msg")
+                .desc("invia un messaggio sullla chat")
+                .build());
+        options.addOption("receive", "visualizza i messaggi ricevuti sulla chat");
 
         return options;
     }

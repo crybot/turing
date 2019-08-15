@@ -2,16 +2,26 @@ package turing.server;
 
 import turing.communication.rmi.RegistrationService;
 import turing.communication.tcp.TcpMessage;
+import turing.communication.udp.UdpCommunication;
+import turing.communication.udp.UdpMessage;
 import turing.server.communication.rmi.RemoteRegistrationService;
 import turing.server.communication.tcp.TcpCommunicationManager;
 import turing.server.state.ServerState;
 
+import javax.xml.crypto.Data;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.DatagramChannel;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -50,6 +60,23 @@ public class TuringServer implements ServerInterface {
     public void start() throws IOException {
         tcpManager.setup(port);
         publishRegistrationService();
+
+        /* UDP TESTING */
+        threadPool.submit(() -> {
+            try {
+                var communication = UdpCommunication.accept(8192);
+                while (true) {
+                    Optional<UdpMessage> message = communication.consumeMessage();
+                    message.ifPresent(udpMessage -> threadPool.submit(() ->
+                            new ServerLogic(serverState, communication).decodeAndExecute(udpMessage, communication)
+                    ));
+                }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        /**************/
 
         while (true) {
             var communication = tcpManager.acceptCommunication();

@@ -13,4 +13,11 @@ public interface Payload extends Serializable {
      * @return a formatted version of the payload
      */
     String formatted();
+
+    /**
+     * @return the payload content as a byte array
+     */
+    default byte[] bytes() {
+        return formatted().getBytes();
+    }
 }

@@ -1,10 +1,12 @@
 package turing.server;
 
 import org.json.JSONObject;
+import turing.chat.ChatMessage;
 import turing.communication.Communication;
-import turing.communication.JsonPaylod;
+import turing.communication.JsonPayload;
 import turing.communication.Message;
 import turing.communication.tcp.TcpMessage;
+import turing.communication.udp.UdpMessage;
 import turing.model.JsonMapper;
 import turing.model.document.Document;
 import turing.model.invitation.Invitation;
@@ -15,6 +17,7 @@ import turing.server.persistence.UserDataManager;
 import turing.server.state.ServerState;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -24,13 +27,13 @@ import java.util.stream.Collectors;
  * Handles the decode-execute portion of the fetch-decode-execute cycle of networking requests processing
  */
 public class ServerLogic {
-    private Communication<JsonPaylod> communication;
+    private Communication<JsonPayload> communication;
     private UserDataManager userDataManager;
     private DocumentDataManager documentDataManager;
     private InvitationDataManager invitationDataManager;
     private ServerState serverState;
 
-    public ServerLogic(ServerState serverState, Communication<JsonPaylod> communication) {
+    public ServerLogic(ServerState serverState, Communication<JsonPayload> communication) {
         this.serverState = serverState;
         this.communication = communication;
         userDataManager = new UserDataManager("./model/user/users");
@@ -43,8 +46,8 @@ public class ServerLogic {
      * @param message   the request message
      * @param communication the open communication on which to send a possible response
      */
-    public void decodeAndExecute(Message<JsonPaylod> message,
-                                 Communication<JsonPaylod> communication) {
+    public void decodeAndExecute(Message<JsonPayload> message,
+                                 Communication<JsonPayload> communication) {
 
         System.out.println("Decoding message: " + message.getContent().formatted());
         JSONObject json = message.getContent().getJson();
@@ -148,6 +151,21 @@ public class ServerLogic {
                     throw new IOException("Could not find user");
                 }
             }
+            else if (json.has("send")) {
+                var request = json.getJSONObject("send");
+                var content = request.getString("message");
+                var user = userDataManager.get(UUID.fromString(request.getString("userId")));
+                if (user.isPresent()) {
+                    sendChatMessage(content, user.get());
+                }
+            }
+            else if (json.has("receive")) {
+                var userId = json.getJSONObject("receive").getString("userId");
+                var user = userDataManager.get(UUID.fromString(userId));
+                if (user.isPresent()) {
+                    receiveChatMessages(user.get());
+                }
+            }
             else {
                 throw new IOException("error");
             }
@@ -230,7 +248,7 @@ public class ServerLogic {
             ok = false;
         }
         communication.sendMessage(TcpMessage.makeResponse(response, ok));
-        // communication.sendMessage(new Message<>(JsonPaylod.makeResponse(response)));
+        // communication.sendMessage(new Message<>(JsonPayload.makeResponse(response)));
     }
 
     /**
@@ -384,6 +402,7 @@ public class ServerLogic {
      * @param section       the document's section's number
      * @param user          the user sending the request
      */
+    //TODO: make sure the user is only editing one section at a time
     private void editSection(String documentName, int section, User user) throws IOException {
         if (serverState.isSectionBeingEdited(documentName, section)) {
             communication.sendMessage(TcpMessage.makeResponse("Section already being edited", false));
@@ -412,7 +431,7 @@ public class ServerLogic {
         if (documentDataManager.getByName(documentName).isPresent() &&
                 user.equals(serverState.getUserEditingSection(documentName, section).orElse(null))) {
             // Mark the section as not being edited anymore
-            serverState.unsetEditingSection(documentName, section);
+            serverState.unsetEditingSection(documentName, section, user);
             // Get the document object as we know it exists
             Document doc =  documentDataManager.getByName(documentName).get();
             doc.setSection(section, content);
@@ -428,6 +447,53 @@ public class ServerLogic {
         }
 
         communication.sendMessage(TcpMessage.makeResponse(response, ok));
+    }
+
+    /**
+     * Send a message to the group chat of the document edited by the user making the request.
+     * If the user is not editing any document, the request is rejected and no message is sent to the chat.
+     * @param message
+     * @param user
+     */
+    private void sendChatMessage(String message, User user) throws IOException {
+        ChatMessage chatMessage = new ChatMessage(user, message);
+        Optional<String> documentName = serverState.getDocumentNameEditedByUser(user);
+        String response = "Could not forward the chat message";
+        boolean ok = false;
+
+        // If the user is editing a document
+        if (documentName.isPresent()) {
+            // Store the chat message in memory
+            serverState.addChatMessage(documentName.get(), chatMessage);
+            response = "Message successfully sent to the document's chat";
+            ok = true;
+        }
+
+        communication.sendMessage(UdpMessage.makeResponse(response, ok));
+    }
+
+    /**
+     *
+     * @param user
+     * @throws IOException
+     */
+    private void receiveChatMessages(User user) throws  IOException {
+        Optional<String> documentName = serverState.getDocumentNameEditedByUser(user);
+        String response;
+        boolean ok = false;
+
+        // If the user is editing a document
+        if (documentName.isPresent()) {
+            // Store the chat message in memory
+            Collection<ChatMessage> messages = serverState.getChatMessages(documentName.get());
+            response = messages.stream().map(ChatMessage::toString).collect(Collectors.joining(System.lineSeparator()));
+            ok = true;
+        }
+        else {
+            response = "User not editing any document";
+        }
+
+        communication.sendMessage(UdpMessage.makeResponse(response, ok));
     }
 
     /**

@@ -1,3 +1,4 @@
+turing.chat
 turing.client
 turing.client.entrypoint
 turing.client.io
@@ -5,6 +6,7 @@ turing.communication
 turing.communication.json
 turing.communication.rmi
 turing.communication.tcp
+turing.communication.udp
 turing.model
 turing.model.document
 turing.model.invitation

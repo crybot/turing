@@ -1,18 +1,18 @@
 package turing.communication.tcp;
 
 import org.json.JSONObject;
-import turing.communication.JsonPaylod;
+import turing.communication.JsonPayload;
 import turing.communication.Message;
 
 import java.util.Optional;
 
-public class TcpMessage extends Message<JsonPaylod> {
-    public TcpMessage(JsonPaylod content) {
+public class TcpMessage extends Message<JsonPayload> {
+    public TcpMessage(JsonPayload content) {
         super(content);
     }
 
     public static TcpMessage makeRequest(JSONObject json) {
-        return new TcpMessage(JsonPaylod.of(json));
+        return new TcpMessage(JsonPayload.of(json));
     }
     public static TcpMessage makeResponse(JSONObject json) {
         String response = json.has("response") ? json.getString("response") : "";
@@ -23,7 +23,7 @@ public class TcpMessage extends Message<JsonPaylod> {
         JSONObject payload = new JSONObject();
         payload.put("response", response);
         payload.put("ok", ok);
-        return new TcpMessage(JsonPaylod.of(payload));
+        return new TcpMessage(JsonPayload.of(payload));
     }
 
     public Optional<String> getResponse() {

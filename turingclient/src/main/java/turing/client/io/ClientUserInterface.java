@@ -3,6 +3,8 @@ package turing.client.io;
 import jdk.jshell.spi.ExecutionControl;
 
 import java.io.IOException;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 
 public interface ClientUserInterface {
     void register(String username, String password) throws ExecutionControl.NotImplementedException;
@@ -17,4 +19,7 @@ public interface ClientUserInterface {
 
     void edit(String documnet, int section) throws IOException;
     void endEdit(String document, int section) throws IOException;
+
+    void send(String message) throws IOException;
+    void receive() throws IOException;
 }

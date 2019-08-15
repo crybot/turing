@@ -69,6 +69,13 @@ public class TuringClient {
                 int section = Integer.parseInt(line.getOptionValues("endedit")[1]);
                 CLI.endEdit(documentName, section);
             }
+            else if (line.hasOption("send")) {
+                String message = line.getOptionValue("send");
+                CLI.send(message);
+            }
+            else if (line.hasOption("receive")) {
+                CLI.receive();
+            }
             else { // interface misuse
                 parser.printHelp();
             }

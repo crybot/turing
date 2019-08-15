@@ -5,12 +5,13 @@ import org.json.JSONObject;
 import turing.communication.rmi.RegistrationService;
 import turing.communication.tcp.TcpCommunication;
 import turing.communication.tcp.TcpMessage;
+import turing.communication.udp.UdpMessage;
 import turing.model.document.Document;
 import turing.model.invitation.Invitation;
 import turing.model.user.User;
 
 import java.io.*;
-import java.net.InetAddress;
+import java.net.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
@@ -370,5 +371,83 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
                 "Sezione " + section + " del documento " + document + " aggiornata con successo",
                 "Impossibile modificare la sezione",
                 true);
+    }
+
+    /**
+     *
+     * @param message
+     * @throws IOException
+     */
+    @Override
+    public void send(String message) throws IOException {
+        var userId = getSavedUserId();
+        if (userId.isPresent()) {
+            var parameters = new JSONObject().put("message", message).put("userId", userId.get());
+            var payload = new JSONObject().put("send", parameters);
+
+            var socket = new DatagramSocket();
+            var packet = new DatagramPacket(payload.toString().getBytes(),
+                    payload.toString().getBytes().length,
+                    InetAddress.getLocalHost(),
+                    8192);
+            socket.send(packet);
+
+            // Wait for a response
+            packet = new DatagramPacket(new byte[1024], 1024);
+            socket.receive(packet);
+            var udpMessage = UdpMessage.makeResponse(packet.getData());
+            if (udpMessage.getResponse().isPresent()) {
+                if (udpMessage.getOk()) {
+                    System.out.println("Messaggio inviato: " + udpMessage.getResponse().get());
+                }
+                else {
+                    System.out.println("Errore: " + udpMessage.getResponse().get());
+                }
+            }
+
+            socket.close();
+        }
+        else {
+            System.err.println("Devi prima effettuare il login");
+        }
+    }
+
+    /**
+     *
+     * @throws IOException
+     */
+    //TODO: factorize (very similar to send())
+    @Override
+    public void receive() throws IOException {
+        var userId = getSavedUserId();
+        if (userId.isPresent()) {
+            var parameters = new JSONObject().put("userId", userId.get());
+            var payload = new JSONObject().put("receive", parameters);
+
+            var socket = new DatagramSocket();
+            var packet = new DatagramPacket(payload.toString().getBytes(),
+                    payload.toString().getBytes().length,
+                    InetAddress.getLocalHost(),
+                    8192);
+            socket.send(packet);
+
+            // Wait for a response
+            packet = new DatagramPacket(new byte[8192], 8192);
+            socket.receive(packet);
+            var udpMessage = UdpMessage.makeResponse(packet.getData());
+            if (udpMessage.getResponse().isPresent()) {
+                if (udpMessage.getOk()) {
+                    System.out.println("Messaggi ricevuti:" + System.lineSeparator() + udpMessage.getResponse().get());
+                }
+                else {
+                    System.out.println("Errore: " + udpMessage.getResponse().get());
+                }
+            }
+
+            socket.close();
+        }
+        else {
+            System.err.println("Devi prima effettuare il login");
+        }
     }
 }

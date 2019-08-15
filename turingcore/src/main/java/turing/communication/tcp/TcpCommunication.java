@@ -1,7 +1,7 @@
 package turing.communication.tcp;
 
 import turing.communication.Communication;
-import turing.communication.JsonPaylod;
+import turing.communication.JsonPayload;
 import turing.communication.Message;
 import turing.communication.json.JsonStreamReader;
 import turing.communication.json.JsonStreamWriter;
@@ -11,14 +11,15 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.util.Optional;
 
-public class TcpCommunication implements Communication<JsonPaylod> {
+//TODO: introduce non-blocking IO
+public class TcpCommunication implements Communication<JsonPayload> {
     private Socket socket;
-    private JsonStreamReader intputMessageStream;
+    private JsonStreamReader inputMessageStream;
     private JsonStreamWriter outputMessageStream;
 
     public TcpCommunication(Socket socket) throws IOException {
         this.socket = socket;
-        intputMessageStream = new JsonStreamReader(socket.getInputStream());
+        inputMessageStream = new JsonStreamReader(socket.getInputStream());
         outputMessageStream = new JsonStreamWriter(socket.getOutputStream());
     }
 
@@ -33,14 +34,14 @@ public class TcpCommunication implements Communication<JsonPaylod> {
     @Override
     public Optional<TcpMessage> consumeMessage() throws IOException {
         System.out.println("Trying to consume a message...");
-        var json = intputMessageStream.readJson();
+        var json = inputMessageStream.readJson();
 
         socket.shutdownInput();
         if (json.isEmpty()) {
             return Optional.empty();
         }
-        return Optional.of(new TcpMessage(JsonPaylod.of(json)));
-        // return Optional.of(new Message<>(new JsonPaylod(json)));
+        return Optional.of(new TcpMessage(JsonPayload.of(json)));
+        // return Optional.of(new Message<>(new JsonPayload(json)));
     }
 
     /**
@@ -48,7 +49,7 @@ public class TcpCommunication implements Communication<JsonPaylod> {
      * @param message   The message to be sent
      */
     @Override
-    public void sendMessage(Message<JsonPaylod> message) throws IOException {
+    public void sendMessage(Message<JsonPayload> message) throws IOException {
         System.out.println("Trying to send a message...");
         outputMessageStream.write(message.getContent().getJson());
         outputMessageStream.newLine();
@@ -62,7 +63,7 @@ public class TcpCommunication implements Communication<JsonPaylod> {
      * @param message   The message to be sent
      */
     @Override
-    public void trySendMessage(Message<JsonPaylod> message) {
+    public void trySendMessage(Message<JsonPayload> message) {
         try {
             sendMessage(message);
         }
@@ -75,7 +76,7 @@ public class TcpCommunication implements Communication<JsonPaylod> {
      */
     @Override
     public void close() throws IOException {
-        intputMessageStream.close();
+        inputMessageStream.close();
         outputMessageStream.close();
         socket.close();
     }

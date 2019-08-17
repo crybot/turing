@@ -23,8 +23,17 @@ public class UdpCommunication implements Communication<JsonPayload> {
 
     }
 
+    private UdpCommunication() throws IOException {
+        inputChannel=  DatagramChannel.open();
+        inputChannel.bind(null);
+    }
+
     public static UdpCommunication accept(int port) throws IOException {
         return new UdpCommunication(port);
+    }
+
+    public static UdpCommunication open() throws IOException {
+        return new UdpCommunication();
     }
 
     @Override
@@ -48,7 +57,13 @@ public class UdpCommunication implements Communication<JsonPayload> {
 
     @Override
     public void sendMessage(Message<JsonPayload> message) throws IOException {
-        inputChannel.send(ByteBuffer.wrap(message.getContent().bytes()), remoteAddress);
+        // cast to udpMessage to access the remote address
+        var udpMessage = (UdpMessage)message;
+        var address = remoteAddress;
+        if (udpMessage.getAddress() != null) {
+            address = udpMessage.getAddress();
+        }
+        inputChannel.send(ByteBuffer.wrap(message.getContent().bytes()), address);
     }
 
     @Override

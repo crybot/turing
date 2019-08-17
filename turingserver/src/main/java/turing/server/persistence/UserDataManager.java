@@ -5,7 +5,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-//TODO: handle synchronization
+/**
+ * Persistent data manager for users
+ */
 public class UserDataManager extends DataManager<UUID, User> {
 
     public UserDataManager(String path) {

@@ -15,7 +15,9 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-//TODO: handle synchronization
+/**
+ * Persistence data manager for documents
+ */
 public class DocumentDataManager extends DataManager<UUID, Document> {
 
     public DocumentDataManager(String path) {

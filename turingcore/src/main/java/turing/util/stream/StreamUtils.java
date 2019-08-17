@@ -17,7 +17,15 @@ import java.util.stream.Collectors;
 
 public abstract class StreamUtils {
 
-    //TODO: handle file locking
+    /**
+     * Deserialize a list of entities from a json-encoded file
+     * @param file
+     * @param root
+     * @param tClass
+     * @param <T>
+     * @return
+     * @throws IOException
+     */
     public static <T extends MapsJson> List<T> deserializeEntities(File file, String root, Class<T> tClass) throws IOException {
         var channel = FileChannel.open(file.toPath(), StandardOpenOption.READ);
         // Memory mapped file
@@ -43,19 +51,32 @@ public abstract class StreamUtils {
                 e.printStackTrace();
             }
         }
-        //TODO: close channel
+        channel.close();
         return entities;
     }
 
+    /**
+     * Serialize a list of entities into a json-encoded file
+     * @param entities
+     * @param root
+     * @param file
+     * @param <T>
+     * @throws IOException
+     */
     public static <T extends MapsJson> void serializeEntities(List<T> entities, String root, FileOutputStream file) throws IOException {
         var channel = file.getChannel();
+        var lock = channel.lock();
+        try {
+            List<JSONObject> jsonObjects = entities.stream()
+                    .map(MapsJson::toJson)
+                    .collect(Collectors.toList());
+            JSONObject serialized = new JSONObject().put(root, jsonObjects);
 
-        List<JSONObject> jsonObjects = entities.stream()
-                .map(MapsJson::toJson)
-                .collect(Collectors.toList());
-        JSONObject serialized = new JSONObject().put(root, jsonObjects);
-
-        channel.write(ByteBuffer.wrap(serialized.toString().getBytes()));
-        channel.close();
+            channel.write(ByteBuffer.wrap(serialized.toString().getBytes()));
+        }
+        finally {
+            lock.release();
+            channel.close();
+        }
     }
 }

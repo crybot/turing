@@ -1,10 +1,10 @@
 package turing.client.io;
 
-import jdk.jshell.spi.ExecutionControl;
 import org.json.JSONObject;
 import turing.communication.rmi.RegistrationService;
 import turing.communication.tcp.TcpCommunication;
 import turing.communication.tcp.TcpMessage;
+import turing.communication.udp.UdpCommunication;
 import turing.communication.udp.UdpMessage;
 import turing.model.document.Document;
 import turing.model.invitation.Invitation;
@@ -17,7 +17,6 @@ import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.file.Files;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -128,9 +127,17 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
 
     }
 
-    //TODO: try erasing cached User ID and then make a request
-    private Optional<String> sendRequest(String requestName, JSONObject parameters, String successString,
-                                         String failureString, boolean includeAuth) {
+    /**
+     * Send an UDP request to the server
+     * @param requestName   the code name of the request to be interpreted by the server
+     * @param parameters    request parameters
+     * @param successString string to be printed out if the request succeeds
+     * @param failureString string to be printed out if the request fails
+     * @param includeAuth   indicates whether the request parameters should include a (cached) authentication token
+     * @return              the server's response, if one is supplied
+     */
+    private Optional<String> sendUdpRequest(String requestName, JSONObject parameters, String successString,
+                                            String failureString, boolean includeAuth) {
         try {
             // Attach UserId (Auth) to the request body
             if (includeAuth) {
@@ -143,11 +150,66 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
                 }
             }
 
-            // make payload
+            // Make payload
             JSONObject payload = new JSONObject().put(requestName, parameters);
 
             // Establish communication channel with the server
-            var communication = new TcpCommunication(InetAddress.getLocalHost(), 1024);
+            var communication = UdpCommunication.open();
+
+            // Send request message to the server
+            communication.sendMessage(UdpMessage.makeRequest(payload,
+                    new InetSocketAddress(serverAddress.getHostName(), 8192)));
+            // Wait for a response from the server
+            var response = communication.consumeMessage().orElse(
+                    UdpMessage.makeResponse("Empty response", false));
+
+            // If the response contains any content
+            if (response.getOk()) {
+                System.out.println(successString);
+                return response.getResponse();
+            }
+            else {
+                System.err.println(failureString + ": "
+                        + response.getResponse().orElse("Errore non specificato"));
+                return Optional.empty();
+            }
+        }
+        catch (Exception e) {
+            System.err.println(failureString + ": " + e.getLocalizedMessage());
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Send a TCP request to the server
+     * @param requestName   the code name of the request to be interpreted by the server
+     * @param parameters    request parameters
+     * @param successString string to be printed out if the request succeeds
+     * @param failureString string to be printed out if the request fails
+     * @param includeAuth   indicates whether the request parameters should include a (cached) authentication token
+     * @return              the server's response, if one is supplied
+     */
+    //TODO: try erasing cached User ID and then make a request
+    private Optional<String> sendTcpRequest(String requestName, JSONObject parameters, String successString,
+                                            String failureString, boolean includeAuth) {
+        try {
+            // Attach UserId (Auth) to the request body
+            if (includeAuth) {
+                Optional<UUID> userId = getSavedUserId();
+                if (!userId.isPresent()) {
+                    throw new IllegalStateException("Devi prima effettuare il login.");
+                }
+                else {
+                    parameters.put("userId", userId.get().toString());
+                }
+            }
+
+            // Make payload
+            JSONObject payload = new JSONObject().put(requestName, parameters);
+
+            // Establish communication channel with the server
+            var communication = new TcpCommunication(serverAddress, 1024);
             // Send request message to the server
             communication.sendMessage(TcpMessage.makeRequest(payload));
             // Receive response from the server
@@ -199,7 +261,7 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
     @Override
     public void login(String username, String password) throws IOException {
         var parameters = new User(username, password).toJson();
-        Optional<String> response = sendRequest("login", parameters,
+        Optional<String> response = sendTcpRequest("login", parameters,
                 "Login effettuato con successo",
                 "Impossibile effettuare il login",
                 false);
@@ -216,7 +278,7 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
     @Override
     public void logout() {
         var parameters = new JSONObject();
-        sendRequest("logout", parameters,
+        sendTcpRequest("logout", parameters,
                 "Logout effettuato con successo",
                 "Impossibile effettuare il logout",
                 true);
@@ -238,7 +300,7 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
         else {
             var doc = new Document(document, sections, userId.get());
             var parameters = doc.toJson();
-            sendRequest("create", parameters,
+            sendTcpRequest("create", parameters,
                     "Documento creato con successo",
                     "Impossibile creare documento",
                     false);
@@ -256,7 +318,7 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
     public void share(String document, String username) {
         var invite = new Invitation(document, username);
         var parameters = invite.toJson();
-        sendRequest("share", parameters,
+        sendTcpRequest("share", parameters,
                 "Documento condiviso con successo",
                 "Impossibile condividere documento",
                 true);
@@ -274,7 +336,7 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
         var parameters = new JSONObject()
                 .put("documentName", documentName)
                 .put("section", section);
-        Optional<String> response = sendRequest("show", parameters,
+        Optional<String> response = sendTcpRequest("show", parameters,
                 "Contenuto della sezione " + section + ": ",
                 "Impossibile visualizzare sezione",
                 true);
@@ -290,7 +352,7 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
     @Override
     public void show(String documentName) {
         var parameters = new JSONObject().put("documentName", documentName);
-        Optional<String> response = sendRequest("show", parameters,
+        Optional<String> response = sendTcpRequest("show", parameters,
                 "Contenuto del documento: ",
                 "Impossibile visualizzare documento",
                 true);
@@ -305,7 +367,7 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
     @Override
     public void list() {
         var parameters = new JSONObject();
-        Optional<String> response = sendRequest("list", parameters,
+        Optional<String> response = sendTcpRequest("list", parameters,
                 "Documenti modificabili: ",
                 "Impossibile visualizzare la lista dei documenti",
                 true);
@@ -324,7 +386,7 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
         var parameters = new JSONObject()
                 .put("documentName", document)
                 .put("section", section);
-        Optional<String> response = sendRequest("edit", parameters,
+        Optional<String> response = sendTcpRequest("edit", parameters,
                 "Sezione " + section + " del documento " + document + " scaricata con successo",
                 "Impossibile modificare la sezione",
                 true);
@@ -367,87 +429,43 @@ public class TuringClientCommandLineInterface implements ClientUserInterface {
                 .put("documentName", document)
                 .put("section", section)
                 .put("content", content.get());
-        sendRequest("endEdit", parameters,
+        sendTcpRequest("endEdit", parameters,
                 "Sezione " + section + " del documento " + document + " aggiornata con successo",
                 "Impossibile modificare la sezione",
                 true);
     }
 
     /**
-     *
+     * Send the server a request to forward a message to the chat of the document being edited by the user
+     * (if there is one)
+     * If any response is received, it will be printed on screen.
+     * The credentials to be sent to the server have been previously cached.
      * @param message
      * @throws IOException
      */
     @Override
     public void send(String message) throws IOException {
-        var userId = getSavedUserId();
-        if (userId.isPresent()) {
-            var parameters = new JSONObject().put("message", message).put("userId", userId.get());
-            var payload = new JSONObject().put("send", parameters);
-
-            var socket = new DatagramSocket();
-            var packet = new DatagramPacket(payload.toString().getBytes(),
-                    payload.toString().getBytes().length,
-                    InetAddress.getLocalHost(),
-                    8192);
-            socket.send(packet);
-
-            // Wait for a response
-            packet = new DatagramPacket(new byte[1024], 1024);
-            socket.receive(packet);
-            var udpMessage = UdpMessage.makeResponse(packet.getData());
-            if (udpMessage.getResponse().isPresent()) {
-                if (udpMessage.getOk()) {
-                    System.out.println("Messaggio inviato: " + udpMessage.getResponse().get());
-                }
-                else {
-                    System.out.println("Errore: " + udpMessage.getResponse().get());
-                }
-            }
-
-            socket.close();
-        }
-        else {
-            System.err.println("Devi prima effettuare il login");
-        }
+        var parameters = new JSONObject().put("message", message);
+        sendUdpRequest("send", parameters,
+                "Messaggio inviato correttamente",
+                "Impossibile inviare il messaggio",
+                true);
     }
 
     /**
-     *
+     * Send the server a request to read the messages received to the chat of the document being edited by the user
+     * (if there is one)
+     * If any response is received, it will be printed on screen.
+     * The credentials to be sent to the server have been previously cached.
      * @throws IOException
      */
-    //TODO: factorize (very similar to send())
     @Override
     public void receive() throws IOException {
-        var userId = getSavedUserId();
-        if (userId.isPresent()) {
-            var parameters = new JSONObject().put("userId", userId.get());
-            var payload = new JSONObject().put("receive", parameters);
-
-            var socket = new DatagramSocket();
-            var packet = new DatagramPacket(payload.toString().getBytes(),
-                    payload.toString().getBytes().length,
-                    InetAddress.getLocalHost(),
-                    8192);
-            socket.send(packet);
-
-            // Wait for a response
-            packet = new DatagramPacket(new byte[8192], 8192);
-            socket.receive(packet);
-            var udpMessage = UdpMessage.makeResponse(packet.getData());
-            if (udpMessage.getResponse().isPresent()) {
-                if (udpMessage.getOk()) {
-                    System.out.println("Messaggi ricevuti:" + System.lineSeparator() + udpMessage.getResponse().get());
-                }
-                else {
-                    System.out.println("Errore: " + udpMessage.getResponse().get());
-                }
-            }
-
-            socket.close();
-        }
-        else {
-            System.err.println("Devi prima effettuare il login");
-        }
+        var parameters = new JSONObject();
+        var response = sendUdpRequest("receive", parameters,
+                "Messaggi ricevuti: ",
+                "Impossibile leggere i messaggi della chat",
+                true);
+        response.ifPresent(System.out::println);
     }
 }

@@ -6,6 +6,7 @@ import turing.communication.Message;
 
 import java.util.Optional;
 
+//TODO: common boilerplate with UdpMessage, try to factorize
 public class TcpMessage extends Message<JsonPayload> {
     public TcpMessage(JsonPayload content) {
         super(content);

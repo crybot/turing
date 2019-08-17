@@ -8,20 +8,11 @@ import turing.server.communication.rmi.RemoteRegistrationService;
 import turing.server.communication.tcp.TcpCommunicationManager;
 import turing.server.state.ServerState;
 
-import javax.xml.crypto.Data;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
-import java.nio.channels.DatagramChannel;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
-import java.rmi.server.UnicastRemoteObject;
 import java.util.Optional;
-import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -61,7 +52,7 @@ public class TuringServer implements ServerInterface {
         tcpManager.setup(port);
         publishRegistrationService();
 
-        /* UDP TESTING */
+        /* UDP Request manager thread */
         threadPool.submit(() -> {
             try {
                 var communication = UdpCommunication.accept(8192);
@@ -76,7 +67,7 @@ public class TuringServer implements ServerInterface {
                 e.printStackTrace();
             }
         });
-        /**************/
+        /*----------------------------*/
 
         while (true) {
             var communication = tcpManager.acceptCommunication();
